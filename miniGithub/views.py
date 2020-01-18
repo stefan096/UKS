@@ -7,6 +7,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from .forms import SignUpForm
+from django.urls import reverse
 
 def home_view(request):
     return render(request, 'miniGithub/home.html')
@@ -24,7 +25,7 @@ def signup_view(request):
         password = form.cleaned_data.get('password1')
         user = authenticate(username=username, password=password)
         login(request, user)
-        return redirect('miniGithub/home')
+        return redirect(reverse('home'))
     else:
         form = SignUpForm()
     return render(request, 'miniGithub/signup.html', {'form': form})
