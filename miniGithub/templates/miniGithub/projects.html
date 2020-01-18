@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mini Git</title>
+</head>
+<body>
+    <h2>My Projects</h2>
+
+    {% for project in projects %}
+      <p>
+        <a href="/projects/{{ project.id }}/">
+          {{ project.title }}
+        </a>
+      </p>
+    {% endfor %}
+</body>
+</html>
+

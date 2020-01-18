@@ -14,6 +14,7 @@ LENGTH_OF_FIELD_AREA = 500
 class Project(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
     git_repo = models.CharField(max_length=LENGTH_OF_FIELD)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 
 # class Problem(models.Model):
