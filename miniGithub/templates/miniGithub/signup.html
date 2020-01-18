@@ -1,10 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "miniGithub/base.html" %}
+{% block body_block %}
     <h2>Sign up Form</h2>
         <form method="post">
           {% csrf_token %}
@@ -22,6 +17,5 @@
           {% endfor %}
           <button type="submit">Sign up</button>
         </form>
-</body>
-</html>
+{% endblock %}
 

@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{project.title}}</title>
-</head>
-<body>
-    <h3>{{project.title}}</h3>
-    <h5>
-      <a href="{{project.git_repo}}">
-        {{ project.git_repo }}
-      </a>
-    </h5>
-</body>
-</html>
+{% extends "miniGithub/base.html" %}
+{% block body_block %}
+  <h3>{{project.title}}</h3>
+  <h5>
+    <a href="{{project.git_repo}}">
+      {{ project.git_repo }}
+    </a>
+  </h5>
+{% endblock %}
 
