@@ -1,6 +1,9 @@
 from enum import Enum
 
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -19,15 +22,26 @@ class Project(models.Model):
 #     base_problem = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
 
 
-class Custom_User(models.Model):
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=LENGTH_OF_FIELD)
     last_name = models.CharField(max_length=LENGTH_OF_FIELD)
-    email = models.CharField(max_length=LENGTH_OF_FIELD)
+    email = models.EmailField(max_length=LENGTH_OF_FIELD)
+
+    def __str__(self):
+        return self.user.username
+
+
+@receiver(post_save, sender=User)
+def update_profile_signal(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    instance.profile.save()
 
 
 class Custom_Event(models.Model):
     created_time = models.DateTimeField()
-    creator = models.ForeignKey(Custom_User, on_delete=models.CASCADE, null=True)
+    creator = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
     # problem = models.ForeignKey(Problem, on_delete=models.CASCADE, null=True)
 
 
@@ -59,7 +73,7 @@ class Milestone(models.Model):
 # class Change_Milestone(Custom_Event):
 #     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, null=True)
 
-#
+
 # class Change_Comment(Custom_Event):
 #     someField = models.CharField(max_length=LENGTH_OF_FIELD)
 
