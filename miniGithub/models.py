@@ -17,10 +17,10 @@ class Project(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 
-# class Problem(models.Model):
-#     title = models.CharField(max_length=LENGTH_OF_FIELD)
-#     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
-#     base_problem = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+class Problem(models.Model):
+    title = models.CharField(max_length=LENGTH_OF_FIELD)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    base_problem = models.ForeignKey('self', related_name='problem', on_delete=models.CASCADE, null=True, blank=True)
 
 
 class Profile(models.Model):
@@ -42,12 +42,12 @@ def update_profile_signal(sender, instance, created, **kwargs):
 
 class Custom_Event(models.Model):
     created_time = models.DateTimeField()
-    creator = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True)
-    # problem = models.ForeignKey(Problem, on_delete=models.CASCADE, null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, null=True)
 
 
-# class Comment(Custom_Event):
-#     description = models.CharField(max_length=LENGTH_OF_FIELD_AREA)
+class Comment(Custom_Event):
+    description = models.CharField(max_length=LENGTH_OF_FIELD_AREA)
 
 
 # class Problem_State(Enum):
