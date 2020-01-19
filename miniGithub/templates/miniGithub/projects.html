@@ -1,0 +1,13 @@
+{% extends "miniGithub/base.html" %}
+{% block body_block %}
+  <h2>My Projects</h2>
+
+  {% for project in projects %}
+    <p>
+      <a href="/projects/{{ project.id }}/">
+        {{ project.title }}
+      </a>
+    </p>
+  {% endfor %}
+{% endblock %}
+
