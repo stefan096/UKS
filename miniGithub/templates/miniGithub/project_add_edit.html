@@ -1,0 +1,26 @@
+{% extends "miniGithub/base.html" %}
+{% block body_block %}
+
+      <div class="container">
+        <div class="jumbotron">
+              <h1>Add/Edit project:</h1>
+            <form method="post" action="project_save">
+                {% csrf_token %}
+                {# A more "HTML" way of creating the login form#}
+                <div>
+                    <label for="title">Title:</label>
+                    <input type="text" name="title" placeholder="Title" value="{{project.title}}">
+                </div>
+                <div>
+                    <label for="git_repo">Git repository:</label>
+                    <input type="git_repo" name="git_repo" placeholder="Git repository" value="{{project.git_repo}}">
+                </div>
+                <div>
+                    <input type="submit" name="" value="Save">
+                </div>
+
+            </form>
+        </div>
+      </div>
+
+{% endblock %}

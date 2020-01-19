@@ -10,6 +10,7 @@ from miniGithub.forms import LoginForm, SignUpForm
 from django.urls import reverse
 from django.contrib import messages
 
+
 def signup_view(request):
     form = SignUpForm(request.POST)
     if form.is_valid():
@@ -27,6 +28,7 @@ def signup_view(request):
     else:
         form = SignUpForm()
     return render(request, 'miniGithub/signup.html', {'form': form})
+
 
 def login_view(request):
     form = LoginForm(request.POST)
