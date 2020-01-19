@@ -31,12 +31,13 @@ def signup_view(request):
         form = SignUpForm()
     return render(request, 'miniGithub/signup.html', {'form': form})
 
-# @login_required
-# root
+@login_required
 def projects_view(request):
-    projects = Project.objects.all()
+    current_user = request.user
+    projects = Project.objects.filter(owner=current_user.id)
     return render(request, 'miniGithub/projects.html', {'projects': projects})
 
+@login_required
 def project_view(request, project_id):
     project = Project.objects.get(pk=project_id)
     return render(request, 'miniGithub/project_details.html', {'project': project})
