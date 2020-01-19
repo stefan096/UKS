@@ -18,6 +18,14 @@
   <div class="panel-body">
     <div class="tab-content">
       <div id="problems" class="tab-pane {% if tab_name == 'problems' %}active{% endif %}">
+      <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+          <a href="{% url 'add_problem' project.id %}">
+            <button type="button" class="btn btn-success">Report problem</button>
+          </a>
+        </div>
+      </div>
       {% for problem in problems %}
         <p>
           <a href="/projects/{{ project.id }}/problems/{{ problem.id }}">
