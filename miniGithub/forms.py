@@ -16,3 +16,8 @@ class SignUpForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(label='username', max_length=100)
     password = forms.CharField(label='password', max_length=100)
+
+
+class ProblemForm(forms.Form):
+    title = forms.CharField(max_length=100, help_text="Problem title")
+    description = forms.CharField(max_length=500, help_text="Problem description")
