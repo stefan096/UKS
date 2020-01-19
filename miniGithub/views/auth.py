@@ -4,12 +4,9 @@ from django.shortcuts import render
 
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
- 
 
-from miniGithub.forms import LoginForm
-from .forms import SignUpForm
-from .models import Project
+
+from miniGithub.forms import LoginForm, SignUpForm
 from django.urls import reverse
 from django.contrib import messages
 
@@ -30,17 +27,6 @@ def signup_view(request):
     else:
         form = SignUpForm()
     return render(request, 'miniGithub/signup.html', {'form': form})
-
-@login_required
-def projects_view(request):
-    current_user = request.user
-    projects = Project.objects.filter(owner=current_user.id)
-    return render(request, 'miniGithub/projects.html', {'projects': projects})
-
-@login_required
-def project_view(request, project_id):
-    project = Project.objects.get(pk=project_id)
-    return render(request, 'miniGithub/project_details.html', {'project': project})
 
 def login_view(request):
     form = LoginForm(request.POST)

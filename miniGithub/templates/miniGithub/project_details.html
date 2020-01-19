@@ -6,5 +6,13 @@
       {{ project.git_repo }}
     </a>
   </h5>
+
+  {% for problem in problems %}
+    <p>
+      <a href="/projects/{{ project.id }}/problems/{{ problem.id }}">
+        {{ problem.title }}
+      </a>
+    </p>
+  {% endfor %}
 {% endblock %}
 

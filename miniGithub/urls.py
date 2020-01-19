@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.urls import path
-from . import views
+from miniGithub.views.auth import *
+from miniGithub.views.projects import *
 
 urlpatterns = [
-    path('', views.projects_view, name="projects"),
-    path('projects/<int:project_id>/', views.project_view, name='project_details'),
-    path('login/', views.login_view, name="login"),
-    path('signup/', views.signup_view, name="signup"),
-    path('logout/', views.user_logout, name='logout'),
+    path('', projects_view, name="projects"),
+    path('projects/<int:project_id>/', project_view, name='project_details'),
+    path('projects/<int:project_id>/problems/<int:problem_id>/', problem_view, name='problem_details'),
+    path('login/', login_view, name="login"),
+    path('signup/', signup_view, name="signup"),
+    path('logout/', user_logout, name='logout'),
 ]
