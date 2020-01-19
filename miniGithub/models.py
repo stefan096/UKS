@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from datetime import datetime
 
 # Create your models here.
 
@@ -21,7 +22,13 @@ class Problem(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     base_problem = models.ForeignKey('self', related_name='problem', on_delete=models.CASCADE, null=True, blank=True)
-
+    
+    @classmethod
+    def create(cls, title, description, project, owner):
+        problem = cls(title=title, project=project)
+        problem.save()
+        comment = Comment.create(owner, description, problem)
+        return problem
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -48,6 +55,12 @@ class Custom_Event(models.Model):
 
 class Comment(Custom_Event):
     description = models.CharField(max_length=LENGTH_OF_FIELD_AREA)
+    @classmethod
+    def create(cls, creator, description, problem):
+        created_time = datetime.now()
+        comment = cls(creator=creator, problem=problem, description=description, created_time=created_time)
+        comment.save()
+        return comment
 
 
 # class Problem_State(Enum):

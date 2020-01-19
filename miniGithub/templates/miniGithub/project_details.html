@@ -7,12 +7,34 @@
     </a>
   </h5>
 
-  {% for problem in problems %}
-    <p>
-      <a href="/projects/{{ project.id }}/problems/{{ problem.id }}">
-        {{ problem.title }}
-      </a>
-    </p>
-  {% endfor %}
+  <ul class="nav nav-tabs">
+    <li class="{% if tab_name == 'problems' %}active{% endif %}">
+      <a data-toggle="tab" href="{% url 'project_details' project.id 'problems' %}">Problems</a>
+    </li>
+    <li class="{% if tab_name == 'milestones' %}active{% endif %}">
+      <a data-toggle="tab" href="{% url 'project_details' project.id 'milestones' %}">Milestones</a>
+    </li>
+  </ul>
+  <div class="panel-body">
+    <div class="tab-content">
+      <div id="problems" class="tab-pane {% if tab_name == 'problems' %}active{% endif %}">
+      <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+          <a href="{% url 'add_problem' project.id %}">
+            <button type="button" class="btn btn-success">Report problem</button>
+          </a>
+        </div>
+      </div>
+      {% for problem in problems %}
+        <p>
+          <a href="/projects/{{ project.id }}/problems/{{ problem.id }}">
+            {{ problem.title }}
+          </a>
+        </p>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
