@@ -13,6 +13,7 @@ from miniGithub.models import Project, Problem
 def projects_view(request):
     current_user = request.user
     projects = Project.objects.filter(owner=current_user.id)
+    collaborations = Project.objects.filter(collaborators=current_user.id)
     return render(request, 'miniGithub/projects.html', {'projects': projects})
 
 
@@ -22,7 +23,6 @@ def project_view(request, project_id, tab_name):
     project_problems = []
     if (tab_name == 'problems'):
         project_problems = Problem.objects.filter(project=project_id)
-    print(project_problems)
     return render(request, 'miniGithub/project_details.html', {'project': project, 'problems': project_problems, 'tab_name': tab_name})
 
 
