@@ -19,16 +19,17 @@
   }
 </style>
 
-  <h2>My Projects</h2>
+  <h2>Collaborators</h2>
 
   <table>
     <tr>
       <th>#</th>
-      <th>Title</th>
-      <th>Show Collaborators</th>
-      <th>Edit project</th>
+      <th>Email</th>
+      <th>First Name</th>
+      <th>Last name</th>
+      <th>Delete from project</th>
     </tr>
-  {% for project in projects %}
+  {% for collaborator in collaborators %}
         <tr>
 
           <td>
@@ -36,24 +37,25 @@
           </td>
 
           <td>
-            <a href="/projects/{{ project.id }}/problems/">
-                {{ project.title }}
-            </a>
+              {{ collaborator.email }}
           </td>
 
           <td>
-            <a href="/projects/{{ project.id }}/collaborators">
-              Collaborators
-            </a>
+              {{ collaborator.first_name }}
           </td>
 
           <td>
-            <a href="/projects/add_edit/{{ project.id }}/">
-              Edit
-            </a>
+              {{ collaborator.last_name }}
+          </td>
+          <td>
+              <a href="collaborators/{{ collaborator.id }}/delete/">
+                Delete
+              </a>
           </td>
         </tr>
   {% endfor %}
   </table>
 {% endblock %}
+
+
 

@@ -31,6 +31,7 @@ class Problem(models.Model):
         comment = Comment.create(owner, description, problem)
         return problem
 
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=LENGTH_OF_FIELD)

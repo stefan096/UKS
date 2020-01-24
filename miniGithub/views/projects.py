@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.db.models import Q
 
 # Create your views here.
 
@@ -58,6 +59,7 @@ def problem_view(request, project_id, problem_id):
     
     return render(request, 'miniGithub/problem_details.html', {'problem': problem})
 
+
 @login_required
 def add_problem_view(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -71,3 +73,17 @@ def add_problem_view(request, project_id):
     else:
         form = ProblemForm()
     return render(request, 'miniGithub/add_problem.html', {'form': form, 'project': project})
+
+
+@login_required
+def collaborators_view(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    collaborators = project.collaborators.all().filter(~Q(id=request.user.id)).filter(~Q(id=project.owner.id))
+    return render(request, 'miniGithub/collaborators_view.html', {'collaborators': collaborators})
+
+
+@login_required
+def delete_collaborator(request, project_id, collaborator_id):
+    project = get_object_or_404(Project, pk=project_id)
+    project.collaborators.remove(collaborator_id)
+    return redirect(reverse('collaborators_view', args=[project_id]))
