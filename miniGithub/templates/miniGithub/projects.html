@@ -26,6 +26,7 @@
       <th>#</th>
       <th>Title</th>
       <th>Show Collaborators</th>
+      <th>Add collaborator</th>
       <th>Edit project</th>
     </tr>
   {% for project in projects %}
@@ -44,6 +45,12 @@
           <td>
             <a href="/projects/{{ project.id }}/collaborators">
               Collaborators
+            </a>
+          </td>
+
+          <td>
+            <a href="/add_collaborator/{{ project.id }}/view/">
+              Add collaborator
             </a>
           </td>
 
