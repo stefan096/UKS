@@ -5,9 +5,10 @@ from django.db.models import Q
 # Create your views here.
 
 from django.contrib.auth.decorators import login_required
- 
+
 from miniGithub.forms import ProblemForm
-from miniGithub.models import Project, Problem
+from miniGithub.models import Project, Problem, Profile
+from django.contrib import messages
 
 
 @login_required
@@ -24,7 +25,8 @@ def project_view(request, project_id, tab_name):
     project_problems = []
     if (tab_name == 'problems'):
         project_problems = Problem.objects.filter(project=project_id)
-    return render(request, 'miniGithub/project_details.html', {'project': project, 'problems': project_problems, 'tab_name': tab_name})
+    return render(request, 'miniGithub/project_details.html',
+                  {'project': project, 'problems': project_problems, 'tab_name': tab_name})
 
 
 @login_required
@@ -56,7 +58,7 @@ def project_save(request, project_id):
 @login_required
 def problem_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
-    
+
     return render(request, 'miniGithub/problem_details.html', {'problem': problem})
 
 
@@ -69,7 +71,7 @@ def add_problem_view(request, project_id):
         title = form.cleaned_data.get('title')
         description = form.cleaned_data.get('description')
         problem = Problem.create(title, description, project, current_user)
-        return redirect(reverse('project_details', kwargs={'project_id':project_id, 'tab_name': 'problems'}))
+        return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'problems'}))
     else:
         form = ProblemForm()
     return render(request, 'miniGithub/add_problem.html', {'form': form, 'project': project})
@@ -87,3 +89,32 @@ def delete_collaborator(request, project_id, collaborator_id):
     project = get_object_or_404(Project, pk=project_id)
     project.collaborators.remove(collaborator_id)
     return redirect(reverse('collaborators_view', args=[project_id]))
+
+
+@login_required
+def add_collaborator_view(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    return render(request, 'miniGithub/add_collaborator_view.html', {'project': project})
+
+
+@login_required
+def add_collaborator(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    email = request.POST['email']
+    profile = get_object_or_404(Profile, email=email)
+
+    collaborators = project.collaborators.all().filter(email=email)
+
+    if project.owner.id == profile.id:
+        messages.info(request, 'You are already owner of this project!')
+    elif collaborators:
+        messages.info(request, 'User is already collaborator on this project!')
+        # that means query set is not empty so i cant add user that is already collaborator
+    else:
+        temp_collaborators = list(project.collaborators.all())
+        temp_collaborators.append(profile.user)
+        project.collaborators.set(temp_collaborators)
+        project.save()
+        messages.info(request, 'Successfully added collaborator')
+
+    return redirect(reverse('add_collaborator_view', args=[project_id]))

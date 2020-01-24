@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path
+
 from miniGithub.views.auth import *
 from miniGithub.views.projects import *
 
@@ -13,6 +14,8 @@ urlpatterns = [
     path('projects/<int:project_id>/problems/add_problem/', add_problem_view, name='add_problem'),
     path('projects/<int:project_id>/collaborators', collaborators_view, name='collaborators_view'),
     path('projects/<int:project_id>/collaborators/<int:collaborator_id>/delete/', delete_collaborator, name='delete_collaborator'),
+    path('add_collaborator/<int:project_id>/view/', add_collaborator_view, name='add_collaborator_view'),
+    path('add_collaborator/<int:project_id>/view/save_collaborator/', add_collaborator, name='add_collaborator'),
 
     path('login/', login_view, name="login"),
     path('signup/', signup_view, name="signup"),
