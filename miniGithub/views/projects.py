@@ -118,3 +118,11 @@ def add_collaborator(request, project_id):
         messages.info(request, 'Successfully added collaborator')
 
     return redirect(reverse('add_collaborator_view', args=[project_id]))
+
+
+@login_required
+def show_collaborator_projects(request):
+    current_user = request.user
+    projects = Project.objects.filter(collaborators=current_user)
+
+    return render(request, 'miniGithub/show_collaborator_projects.html', {'projects': projects})
