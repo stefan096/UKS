@@ -42,6 +42,36 @@
         </div>
       </div>
     </div>
+
+     <div class="tab-content">
+      <div id="milestones" class="tab-pane {% if tab_name == 'milestones' %}active{% endif %}">
+      <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+          <a href="{% url 'add_milestone' project.id %}">
+            <button type="button" class="btn btn-success">Report milestone</button>
+          </a>
+        </div>
+      </div>
+      <br />
+      <div class="list-group">
+        {% for milestone in milestones %}
+          <a class="list-group-item" >
+            <p>
+              <strong>{{ milestone.title }}</strong>
+            </p>
+            <p class="text-muted">
+              #{{milestone.id}} opened {{milestone.created_time|naturaltime}} due {{milestone.due_date|naturaltime}}
+            </p>
+             <p class="text-muted">
+               {{milestone.description}}
+             </p>
+          </a>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
+
   </div>
 {% endblock %}
 
