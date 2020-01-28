@@ -1,4 +1,5 @@
 {% extends "miniGithub/base.html" %}
+{% load humanize %}
 {% block body_block %}
   <h3>{{project.title}}</h3>
   <h5>
@@ -26,13 +27,19 @@
           </a>
         </div>
       </div>
-      {% for problem in problems %}
-        <p>
-          <a href="/projects/{{ project.id }}/problems/{{ problem.id }}">
-            {{ problem.title }}
+      <br />
+      <div class="list-group">
+        {% for problem in problems %}
+          <a class="list-group-item" href="/projects/{{ project.id }}/problems/{{ problem.id }}">
+            <p>
+              <strong>{{ problem.title }}</strong>
+            </p>
+            <p class="text-muted">
+              #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
+            </p>
           </a>
-        </p>
-      {% endfor %}
+        {% endfor %}
+        </div>
       </div>
     </div>
   </div>

@@ -22,13 +22,16 @@ class Project(models.Model):
 class Problem(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    reported_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    created_time = models.DateTimeField(null=True)
     base_problem = models.ForeignKey('self', related_name='problem', on_delete=models.CASCADE, null=True, blank=True)
     
     @classmethod
     def create(cls, title, description, project, owner):
-        problem = cls(title=title, project=project)
+        created_time = datetime.now()
+        problem = cls(title=title, project=project, reported_by=owner, created_time=created_time)
         problem.save()
-        comment = Comment.create(owner, description, problem)
+        comment = Comment.create(owner, description, problem, created_time)
         return problem
 
 
@@ -58,8 +61,7 @@ class Custom_Event(models.Model):
 class Comment(Custom_Event):
     description = models.CharField(max_length=LENGTH_OF_FIELD_AREA)
     @classmethod
-    def create(cls, creator, description, problem):
-        created_time = datetime.now()
+    def create(cls, creator, description, problem, created_time):
         comment = cls(creator=creator, problem=problem, description=description, created_time=created_time)
         comment.save()
         return comment

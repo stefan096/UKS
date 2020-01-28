@@ -59,8 +59,7 @@ def project_save(request, project_id):
 def problem_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     comments = Comment.objects.filter(problem=problem.id)
-    reported_by = comments.first()
-    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'comments': comments, 'reported_by': reported_by})
+    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'comments': comments})
 
 
 @login_required
