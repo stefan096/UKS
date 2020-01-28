@@ -18,6 +18,12 @@ class Project(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     collaborators = models.ManyToManyField(User, related_name='collaborations')
 
+class Milestone(models.Model):
+    due_date = models.DateTimeField(null=True)
+    created_time = models.DateTimeField(null=True)
+    title = models.CharField(max_length=LENGTH_OF_FIELD, null=True)
+    description = models.CharField(max_length=LENGTH_OF_FIELD_AREA, null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
 class Problem(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
@@ -25,7 +31,8 @@ class Problem(models.Model):
     reported_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     created_time = models.DateTimeField(null=True)
     base_problem = models.ForeignKey('self', related_name='problem', on_delete=models.CASCADE, null=True, blank=True)
-    
+    linked_milestone = models.ForeignKey(Milestone, on_delete=models.SET_NULL, null=True)
+
     @classmethod
     def create(cls, title, description, project, owner):
         created_time = datetime.now()
@@ -82,11 +89,6 @@ class Comment(Custom_Event):
 
 # class Change_Assignee(Custom_Event):
 #     assignee = models.ForeignKey(Custom_User, on_delete=models.CASCADE, null=True)
-
-
-class Milestone(models.Model):
-    dateTime = models.DateTimeField()
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
 
 # class Change_Milestone(Custom_Event):
