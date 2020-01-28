@@ -1,0 +1,45 @@
+{% extends "miniGithub/base.html" %}
+{% block body_block %}
+
+<style>
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+</style>
+
+  <h2>Collaboration Projects</h2>
+
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Title</th>
+    </tr>
+  {% for project in projects %}
+        <tr>
+
+          <td>
+            {{forloop.counter}}
+          </td>
+
+          <td>
+            <a href="/projects/{{ project.id }}/problems/">
+                {{ project.title }}
+            </a>
+          </td>
+
+  {% endfor %}
+  </table>
+{% endblock %}
+
