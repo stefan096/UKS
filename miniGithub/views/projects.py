@@ -79,6 +79,14 @@ def add_problem_view(request, project_id):
 
 
 @login_required
+def add_comment(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    comment = request.POST['comment']
+    current_user = request.user
+    created_comment = Comment.create(current_user, comment, problem)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
+@login_required
 def collaborators_view(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     collaborators = project.collaborators.all().filter(~Q(id=request.user.id)).filter(~Q(id=project.owner.id))
