@@ -31,7 +31,7 @@ class Problem(models.Model):
         created_time = datetime.now()
         problem = cls(title=title, project=project, reported_by=owner, created_time=created_time)
         problem.save()
-        comment = Comment.create(owner, description, problem, created_time)
+        comment = Comment.create(owner, description, problem)
         return problem
 
 
@@ -61,7 +61,8 @@ class Custom_Event(models.Model):
 class Comment(Custom_Event):
     description = models.CharField(max_length=LENGTH_OF_FIELD_AREA)
     @classmethod
-    def create(cls, creator, description, problem, created_time):
+    def create(cls, creator, description, problem):
+        created_time = datetime.now()
         comment = cls(creator=creator, problem=problem, description=description, created_time=created_time)
         comment.save()
         return comment
