@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 
 from miniGithub.forms import ProblemForm
-from miniGithub.models import Project, Problem, Profile
+from miniGithub.models import Project, Problem, Profile, Comment
 from django.contrib import messages
 
 
@@ -58,8 +58,8 @@ def project_save(request, project_id):
 @login_required
 def problem_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
-
-    return render(request, 'miniGithub/problem_details.html', {'problem': problem})
+    comments = Comment.objects.filter(problem=problem.id)
+    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'comments': comments})
 
 
 @login_required
@@ -76,6 +76,14 @@ def add_problem_view(request, project_id):
         form = ProblemForm()
     return render(request, 'miniGithub/add_problem.html', {'form': form, 'project': project})
 
+
+@login_required
+def add_comment(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    comment = request.POST['comment']
+    current_user = request.user
+    created_comment = Comment.create(current_user, comment, problem)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
 
 @login_required
 def collaborators_view(request, project_id):

@@ -1,5 +1,52 @@
 {% extends "miniGithub/base.html" %}
+{% load humanize %}
 {% block body_block %}
-  <h3>Problem detalji</h3>
+  <h3>
+    {{ problem.title }}
+    &nbsp;
+    <i class="text-muted">
+      #{{ problem.id }}
+    </i>
+  </h3>
+  <p class="text-muted">
+    <strong> {{ problem.reported_by }} </strong>
+    reported this problem {{ problem.created_time|naturaltime }}
+  </p>
+  <hr />
+  <div>
+
+    {% for comment in comments %}
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <strong class="panel-title">
+            {{ comment.creator }}
+          </strong>
+          <span class="text-muted">
+            commented {{ comment.created_time|naturaltime }}
+          </span>
+        </div>
+        <div class="panel-body">
+          <p>
+            {{ comment.description }}
+          </p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <hr />
+  <form action="add_comment/" method="post">
+    {% csrf_token %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="form-group">
+          <label for="comment">Leave a comment:</label>
+          <textarea class="form-control" name="comment"></textarea>
+        </div>
+      </div>
+      <div class="panel-footer">
+          <input class="btn btn-success" type="submit" name="" value="Comment">
+      </div>
+    </div>
+  </form>
 {% endblock %}
 
