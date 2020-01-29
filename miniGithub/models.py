@@ -18,12 +18,14 @@ class Project(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     collaborators = models.ManyToManyField(User, related_name='collaborations')
 
+
 class Milestone(models.Model):
     due_date = models.DateTimeField(null=True)
     created_time = models.DateTimeField(null=True)
     title = models.CharField(max_length=LENGTH_OF_FIELD, null=True)
     description = models.CharField(max_length=LENGTH_OF_FIELD_AREA, null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+
 
 class Problem(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)

@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.db.models import Q
+from datetime import datetime
 
 # Create your views here.
 
 from django.contrib.auth.decorators import login_required
 
-from miniGithub.forms import ProblemForm
-from miniGithub.models import Project, Problem, Profile, Comment
+from miniGithub.forms import ProblemForm, MilestoneForm
+from miniGithub.models import Project, Problem, Profile, Comment, Milestone
 from django.contrib import messages
 
 
@@ -23,8 +24,15 @@ def projects_view(request):
 def project_view(request, project_id, tab_name):
     project = get_object_or_404(Project, pk=project_id)
     project_problems = []
-    if (tab_name == 'problems'):
+    if tab_name == 'problems':
         project_problems = Problem.objects.filter(project=project_id)
+        return render(request, 'miniGithub/project_details.html',
+                      {'project': project, 'problems': project_problems, 'tab_name': tab_name})
+    elif tab_name == 'milestones':
+        project_milestones = Milestone.objects.filter(project=project_id)
+        return render(request, 'miniGithub/project_details.html',
+                  {'project': project, 'milestones': project_milestones, 'tab_name': tab_name})
+
     return render(request, 'miniGithub/project_details.html',
                   {'project': project, 'problems': project_problems, 'tab_name': tab_name})
 
@@ -78,12 +86,31 @@ def add_problem_view(request, project_id):
 
 
 @login_required
+def add_milestone_view(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    form = MilestoneForm(request.POST)
+    if form.is_valid():
+        title = form.cleaned_data.get('title')
+        description = form.cleaned_data.get('description')
+        due_date = form.cleaned_data.get('due_date')
+        created_time = datetime.now()
+        milestone = Milestone(title=title, description=description, due_date=due_date, created_time=created_time,
+                              project=project)
+        milestone.save()
+        return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'milestones'}))
+    else:
+        form = MilestoneForm()
+    return render(request, 'miniGithub/add_milestone.html', {'form': form, 'project': project})
+
+
+@login_required
 def add_comment(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     comment = request.POST['comment']
     current_user = request.user
     created_comment = Comment.create(current_user, comment, problem)
     return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
 
 @login_required
 def collaborators_view(request, project_id):
