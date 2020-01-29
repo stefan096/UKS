@@ -1,0 +1,30 @@
+version: '3'
+
+# we define our services definitions. We have two services redis and web
+services:
+  web:
+    # Build our docker application
+    # instead of build we could use image: stefan096/image_from_docker_hub
+    build: .
+
+    # Set volumes as we did before in docker run
+#    volumes:
+#      - path_to_logs_file_on_your_disk:/usr/src/app/myapp/logs
+
+    # Set port maping as we did before
+    ports:
+      - "5000:5000"
+
+#    # Set some env variables
+#    environment:
+#      - DB_PORT=6379
+#
+#    # Since oour main app depends on some DB, we first pull redis image, and run it
+#    depends_on:
+#      - redis
+
+#  # Our second service, or redis db
+#  redis:
+#
+#    # We don't build our own image, we pull from dockerhub
+#    image: "redis:alpine"
