@@ -31,8 +31,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'dal',
-    'dal_select2',
     'django.contrib.humanize',
     'miniGithub.apps.MinigithubConfig',
     'django.contrib.admin',
