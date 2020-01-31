@@ -69,12 +69,30 @@ class Custom_Event(models.Model):
 
 class Comment(Custom_Event):
     description = models.CharField(max_length=LENGTH_OF_FIELD_AREA)
+
     @classmethod
     def create(cls, creator, description, problem):
         created_time = datetime.now()
         comment = cls(creator=creator, problem=problem, description=description, created_time=created_time)
         comment.save()
         return comment
+
+    def edit(self, creator, description):
+        edited_time = datetime.now()
+        self.description = description
+        self.save()
+        Change_Comment.create(comment=self, created_time = edited_time, problem=self.problem, creator=creator)
+        return self
+
+
+class Change_Comment(Custom_Event):
+    relatedComment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True)
+
+    @classmethod
+    def create(cls, comment, created_time, problem, creator):
+        comment_change = cls(creator=creator, problem=problem, relatedComment=comment, created_time=created_time)
+        comment_change.save()
+        return comment_change
 
 
 # class Problem_State(Enum):
@@ -95,10 +113,6 @@ class Comment(Custom_Event):
 
 # class Change_Milestone(Custom_Event):
 #     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, null=True)
-
-
-# class Change_Comment(Custom_Event):
-#     someField = models.CharField(max_length=LENGTH_OF_FIELD)
 
 
 # class Change_Code(Custom_Event):
