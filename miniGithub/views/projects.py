@@ -7,8 +7,8 @@ from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 
-from miniGithub.forms import ProblemForm, MilestoneForm
-from miniGithub.models import Project, Problem, Profile, Comment, Milestone
+from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm
+from miniGithub.models import Project, Problem, Profile, Comment, Milestone, Change_Comment
 from django.contrib import messages
 
 
@@ -67,8 +67,26 @@ def project_save(request, project_id):
 def problem_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     comments = Comment.objects.filter(problem=problem.id)
+    for comment in comments:
+        edits = Change_Comment.objects.filter(relatedComment=comment.id)
+        comment.editCounts = edits.count()
+        comment.edits = edits
+        comment.editsSorted = edits[::-1]
     return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'comments': comments})
 
+@login_required
+def edit_comment_view(request, project_id, problem_id, comment_id): 
+    comment = get_object_or_404(Comment, pk=comment_id)
+    form = EditCommentForm(request.POST, initial={"description": comment.description})
+    if form.is_valid():
+        current_user = request.user
+        description = form.cleaned_data.get('description')
+        comment = comment.edit(current_user, description)
+        print (comment)
+        return redirect(reverse('problem_details', args=[project_id, problem_id]))
+    else:
+        form = EditCommentForm(initial={"description": comment.description})
+    return render(request, 'miniGithub/edit_comment.html', {'form': form, 'comment': comment, "project_id": project_id, "problem_id": problem_id})
 
 @login_required
 def add_problem_view(request, project_id):

@@ -23,6 +23,12 @@ class ProblemForm(forms.Form):
     description = forms.CharField(max_length=500, help_text="Problem description")
 
 
+class EditCommentForm(forms.Form):
+    description = forms.CharField(max_length=500, help_text="Comment description",
+            widget=forms.Textarea(attrs={'class': "form-control"}),
+)
+
+
 class MilestoneForm(forms.Form):
     title = forms.CharField(max_length=100, help_text="Milestone title")
     description = forms.CharField(max_length=500, help_text="Milestone description", required=False)
