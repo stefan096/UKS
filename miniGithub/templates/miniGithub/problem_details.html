@@ -83,6 +83,19 @@
       </div>
       <div class="panel-footer">
           <input class="btn btn-success" type="submit" name="" value="Comment">
+             {% if problem.is_open %}
+              <a href="close/">
+                <button class="btn btn-default" type="button">
+                  Close issue
+                </button>
+              </a>
+            {% else %}
+              <a href="reopen/">
+                <button class="btn btn-default" type="button">
+                  Reopen issue
+                </button>
+              </a>
+            {% endif %}
       </div>
     </div>
   </form>

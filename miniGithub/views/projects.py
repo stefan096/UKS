@@ -8,7 +8,7 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 
 from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm
-from miniGithub.models import Project, Problem, Profile, Comment, Milestone, Change_Comment
+from miniGithub.models import Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State
 from django.contrib import messages
 
 
@@ -67,6 +67,8 @@ def project_save(request, project_id):
 def problem_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     comments = Comment.objects.filter(problem=problem.id)
+    state_change = Change_State.objects.filter(problem=problem.id).last()
+    problem.is_open = int(state_change.current_state) != Problem_State.CLOSED.value
     for comment in comments:
         edits = Change_Comment.objects.filter(relatedComment=comment.id)
         comment.editCounts = edits.count()
@@ -82,7 +84,6 @@ def edit_comment_view(request, project_id, problem_id, comment_id):
         current_user = request.user
         description = form.cleaned_data.get('description')
         comment = comment.edit(current_user, description)
-        print (comment)
         return redirect(reverse('problem_details', args=[project_id, problem_id]))
     else:
         form = EditCommentForm(initial={"description": comment.description})
@@ -127,6 +128,19 @@ def add_comment(request, project_id, problem_id):
     comment = request.POST['comment']
     current_user = request.user
     created_comment = Comment.create(current_user, comment, problem)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
+@login_required
+def close_problem(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    current_user = request.user
+    problem.close_problem(current_user)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
+def reopen_problem(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    current_user = request.user
+    problem.reopen_problem(current_user)
     return redirect(reverse('problem_details', args=[project_id, problem_id]))
 
 
