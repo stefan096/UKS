@@ -6,9 +6,10 @@ from datetime import datetime
 # Create your views here.
 
 from django.contrib.auth.decorators import login_required
-
+from itertools import chain
+from operator import attrgetter
 from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm
-from miniGithub.models import Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State
+from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State
 from django.contrib import messages
 
 
@@ -67,14 +68,20 @@ def project_save(request, project_id):
 def problem_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     comments = Comment.objects.filter(problem=problem.id)
-    state_change = Change_State.objects.filter(problem=problem.id).last()
-    problem.is_open = int(state_change.current_state) != Problem_State.CLOSED.value
+    state_changes = Change_State.objects.filter(problem=problem.id)
+    if (state_changes.last()):
+        problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+    else:
+        problem.is_open = True
     for comment in comments:
         edits = Change_Comment.objects.filter(relatedComment=comment.id)
         comment.editCounts = edits.count()
         comment.edits = edits
         comment.editsSorted = edits[::-1]
-    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'comments': comments})
+    timeline = sorted(chain(comments, state_changes), key=attrgetter('created_time'))
+    # timeline.sort(key=lambda x:x['created_time'])
+    print (timeline)
+    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline})
 
 @login_required
 def edit_comment_view(request, project_id, problem_id, comment_id): 
