@@ -11,6 +11,9 @@ from datetime import datetime
 LENGTH_OF_FIELD = 100
 LENGTH_OF_FIELD_AREA = 500
 
+class Problem_State(Enum):
+    OPEN = 1
+    CLOSED = 2
 
 class Project(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
@@ -41,7 +44,22 @@ class Problem(models.Model):
         problem = cls(title=title, project=project, reported_by=owner, created_time=created_time)
         problem.save()
         comment = Comment.create(owner, description, problem)
+        state = Change_State.create(owner, Problem_State['OPEN'].value, problem)
         return problem
+
+    def close_problem(self, current_user):
+        state = Change_State.create(current_user, Problem_State['CLOSED'].value, self)
+        return self
+
+    def reopen_problem(self, current_user):
+        state = Change_State.create(current_user, Problem_State['OPEN'].value, self)
+        return self
+
+    def link_to_milestone(self, current_user, milestone):
+        self.linked_milestone = milestone
+        new_event = Change_Milestone.create(current_user, milestone, self)
+        self.save()
+        return self
 
 
 class Profile(models.Model):
@@ -95,25 +113,34 @@ class Change_Comment(Custom_Event):
         return comment_change
 
 
-# class Problem_State(Enum):
-#     OPEN = 1
-#     CLOSED = 2
-#
-#
-# class Change_State(Custom_Event):
-#     new_state = models.CharField(
-#       max_length=2,
-#       choices=[(tag, tag.value) for tag in Problem_State]
-#     )
+
+class Change_State(Custom_Event):
+    current_state = models.CharField(
+      max_length=2,
+      choices=[(tag, tag.value) for tag in Problem_State]
+    )
+
+    @classmethod
+    def create(cls, creator, state, problem):
+        created_time = datetime.now()
+        new_state = cls(creator=creator, problem=problem, current_state=state, created_time=created_time)
+        new_state.save()
+        return new_state
 
 
 # class Change_Assignee(Custom_Event):
 #     assignee = models.ForeignKey(Custom_User, on_delete=models.CASCADE, null=True)
 
 
-# class Change_Milestone(Custom_Event):
-#     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, null=True)
+class Change_Milestone(Custom_Event):
+    current_milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, null=True)
 
+    @classmethod
+    def create(cls, creator, milestone, problem):
+        created_time = datetime.now()
+        new_state = cls(creator=creator, problem=problem, current_milestone=milestone, created_time=created_time)
+        new_state.save()
+        return new_state
 
 # class Change_Code(Custom_Event):
 #     path_url = models.CharField(max_length=LENGTH_OF_FIELD)
