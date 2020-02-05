@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from itertools import chain
 from operator import attrgetter
 from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm
-from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State
+from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone
 from django.contrib import messages
 
 
@@ -69,6 +69,7 @@ def problem_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     comments = Comment.objects.filter(problem=problem.id)
     state_changes = Change_State.objects.filter(problem=problem.id)
+    milestone_changes = Change_Milestone.objects.filter(problem=problem.id)
     if (state_changes.last()):
         problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
     else:
@@ -78,7 +79,7 @@ def problem_view(request, project_id, problem_id):
         comment.editCounts = edits.count()
         comment.edits = edits
         comment.editsSorted = edits[::-1]
-    timeline = sorted(chain(comments, state_changes), key=attrgetter('created_time'))
+    timeline = sorted(chain(comments, state_changes, milestone_changes), key=attrgetter('created_time'))
     return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline})
 
 @login_required

@@ -71,6 +71,15 @@
             </p>
           </div>
         </div>
+        {% elif item.current_milestone %}
+          <div>
+            <p>
+              <span class="glyphicon glyphicon-paperclip"></span>
+              <strong>{{ item.creator }}</strong>
+              <span> has assigned this problem to milestone <strong><i>{{item.current_milestone.title}}</i></strong> </span>
+              {{ item.created_time|naturaltime }}
+            </p>
+          </div>
         {% elif item.current_state %}
           <div>
               {% if item.current_state == '1' %}
