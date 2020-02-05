@@ -79,9 +79,21 @@ def problem_view(request, project_id, problem_id):
         comment.edits = edits
         comment.editsSorted = edits[::-1]
     timeline = sorted(chain(comments, state_changes), key=attrgetter('created_time'))
-    # timeline.sort(key=lambda x:x['created_time'])
-    print (timeline)
     return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline})
+
+@login_required
+def set_milestone_view(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    project_milestones = Milestone.objects.filter(project=project_id)
+    return render(request, 'miniGithub/link_milestone.html', {'problem': problem, 'milestones': project_milestones})
+
+@login_required
+def set_milestone(request, project_id, problem_id, milestone_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    milestone = get_object_or_404(Milestone, pk=milestone_id)
+    current_user = request.user
+    problem = problem.link_to_milestone(current_user, milestone)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
 
 @login_required
 def edit_comment_view(request, project_id, problem_id, comment_id): 

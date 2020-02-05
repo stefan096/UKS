@@ -1,0 +1,61 @@
+{% extends "miniGithub/base_with_jquery.html" %}
+{% load humanize %}
+{% block body_block %}
+  <h3>
+    {{ problem.title }}
+    &nbsp;
+    <i class="text-muted">
+      #{{ problem.id }}
+    </i>
+  </h3>
+  <p class="text-muted">
+    <strong> {{ problem.reported_by }} </strong>
+    reported this problem {{ problem.created_time|naturaltime }}
+  </p>
+  <hr />
+  <h4>Link this problem to milestone</h4>
+  <br />
+  <div class="list-group">
+    {% for milestone in milestones %}
+      {% if problem.linked_milestone.id == milestone.id %}
+        <div class="list-group-item">
+          <span class="row" style="display: flex; align-items: center;">
+            <span class="col-xs-11">
+              <p>
+                <strong>{{ milestone.title }}</strong>
+              </p>
+              <p class="text-muted">
+                #{{milestone.id}} opened {{milestone.created_time|naturaltime}} due {{milestone.due_date|naturaltime}}
+              </p>
+              <p class="text-muted">
+                {{milestone.description}}
+              </p>
+            </span>
+            <span class="col-xs-1">
+              <strong class="text-success">Linked</strong>
+            </span>
+          </span>
+        </div>
+      {% else %}
+      <a class="list-group-item" href="{{milestone.id}}/">
+        <span class="row" style="display: flex; align-items: center;">
+          <span class="col-xs-11">
+            <p>
+              <strong>{{ milestone.title }}</strong>
+            </p>
+            <p class="text-muted">
+              #{{milestone.id}} opened {{milestone.created_time|naturaltime}} due {{milestone.due_date|naturaltime}}
+            </p>
+            <p class="text-muted">
+              {{milestone.description}}
+            </p>
+          </span>
+          <span class="col-xs-1">
+            <span class="text-primary">Link</span>
+          </span>
+        </span>
+      </a>
+      {% endif %}
+    {% endfor %}
+    </div>
+  {% endblock %}

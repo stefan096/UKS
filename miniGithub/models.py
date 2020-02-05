@@ -55,6 +55,12 @@ class Problem(models.Model):
         state = Change_State.create(current_user, Problem_State['OPEN'].value, self)
         return self
 
+    def link_to_milestone(self, current_user, milestone):
+        self.linked_milestone = milestone
+        new_event = Change_Milestone.create(current_user, milestone, self)
+        self.save()
+        return self
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -126,9 +132,15 @@ class Change_State(Custom_Event):
 #     assignee = models.ForeignKey(Custom_User, on_delete=models.CASCADE, null=True)
 
 
-# class Change_Milestone(Custom_Event):
-#     milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, null=True)
+class Change_Milestone(Custom_Event):
+    current_milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, null=True)
 
+    @classmethod
+    def create(cls, creator, milestone, problem):
+        created_time = datetime.now()
+        new_state = cls(creator=creator, problem=problem, current_milestone=milestone, created_time=created_time)
+        new_state.save()
+        return new_state
 
 # class Change_Code(Custom_Event):
 #     path_url = models.CharField(max_length=LENGTH_OF_FIELD)
