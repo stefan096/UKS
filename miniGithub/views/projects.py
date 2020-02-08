@@ -88,6 +88,7 @@ def set_milestone_view(request, project_id, problem_id):
     project_milestones = Milestone.objects.filter(project=project_id)
     return render(request, 'miniGithub/link_milestone.html', {'problem': problem, 'milestones': project_milestones})
 
+
 @login_required
 def set_milestone(request, project_id, problem_id, milestone_id):
     problem = get_object_or_404(Problem, pk=problem_id)
@@ -95,6 +96,7 @@ def set_milestone(request, project_id, problem_id, milestone_id):
     current_user = request.user
     problem = problem.link_to_milestone(current_user, milestone)
     return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
 
 @login_required
 def edit_comment_view(request, project_id, problem_id, comment_id): 
@@ -108,6 +110,7 @@ def edit_comment_view(request, project_id, problem_id, comment_id):
     else:
         form = EditCommentForm(initial={"description": comment.description})
     return render(request, 'miniGithub/edit_comment.html', {'form': form, 'comment': comment, "project_id": project_id, "problem_id": problem_id})
+
 
 @login_required
 def add_problem_view(request, project_id):
@@ -143,6 +146,66 @@ def add_milestone_view(request, project_id):
 
 
 @login_required
+def edit_milestone_view(request, project_id, milestone_id):
+    project = get_object_or_404(Project, pk=project_id)
+    form = MilestoneForm(request.POST)
+    if form.is_valid():
+        milestone = Milestone.objects.get(pk=milestone_id)
+        milestone.title = form.cleaned_data.get('title')
+        milestone.description = form.cleaned_data.get('description')
+        milestone.due_date = form.cleaned_data.get('due_date')
+        #milestone.created_time = datetime.now()
+        #treba videti kad se edituje da li treba da se generise novi dogadjaj
+        milestone.save()
+        return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'milestones'}))
+    else:
+        found_milestone = Milestone.objects.get(pk=milestone_id)
+        found_milestone.due_date = str(found_milestone.due_date.date())
+    return render(request, 'miniGithub/edit_milestone.html', {'form': form, 'project': project, 'milestone': found_milestone})
+
+
+@login_required
+def milestone_details(request, project_id, milestone_id):
+    project = get_object_or_404(Project, pk=project_id)
+    found_milestone = Milestone.objects.get(pk=milestone_id)
+    problems = Problem.objects.filter(linked_milestone=found_milestone)
+
+    for one_problem in problems:
+        state_changes = Change_State.objects.filter(problem=one_problem.id)
+        if state_changes.last():
+            one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+        else:
+            one_problem.is_open = True
+
+    return render(request, 'miniGithub/milestone_details.html', {'project': project, 'milestone': found_milestone,
+                                                                 'problems': problems})
+
+
+@login_required
+def milestone_details_action(request, project_id, milestone_id, action):
+    project = get_object_or_404(Project, pk=project_id)
+    found_milestone = Milestone.objects.get(pk=milestone_id)
+    problems = Problem.objects.filter(linked_milestone=found_milestone)
+    ret_val = []
+
+    for one_problem in problems:
+        state_changes = Change_State.objects.filter(problem=one_problem.id)
+        if state_changes.last():
+            one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+
+            if one_problem.is_open == action:
+                ret_val.append(one_problem)
+        else:
+            one_problem.is_open = True
+
+            if one_problem.is_open == action:
+                ret_val.append(one_problem)
+
+    return render(request, 'miniGithub/milestone_details.html', {'project': project, 'milestone': found_milestone,
+                                                                 'problems': ret_val})
+
+
+@login_required
 def add_comment(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     comment = request.POST['comment']
@@ -150,12 +213,14 @@ def add_comment(request, project_id, problem_id):
     created_comment = Comment.create(current_user, comment, problem)
     return redirect(reverse('problem_details', args=[project_id, problem_id]))
 
+
 @login_required
 def close_problem(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     current_user = request.user
     problem.close_problem(current_user)
     return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
 
 def reopen_problem(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
