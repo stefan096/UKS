@@ -11,6 +11,7 @@ from datetime import datetime
 LENGTH_OF_FIELD = 100
 LENGTH_OF_FIELD_AREA = 500
 
+
 class Problem_State(Enum):
     OPEN = 1
     CLOSED = 2
@@ -142,8 +143,24 @@ class Change_Milestone(Custom_Event):
         new_state.save()
         return new_state
 
-# class Change_Code(Custom_Event):
-#     path_url = models.CharField(max_length=LENGTH_OF_FIELD)
+
+class Change_Code(models.Model):
+    commit_url = models.CharField(max_length=LENGTH_OF_FIELD)
+    commit_id = models.CharField(max_length=LENGTH_OF_FIELD)
+    message = models.CharField(max_length=LENGTH_OF_FIELD)
+    created_time = models.DateTimeField()
+    creator = models.CharField(max_length=LENGTH_OF_FIELD)
+    creator_email = models.CharField(max_length=LENGTH_OF_FIELD)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, null=True)
+
+    @classmethod
+    def create(cls, commit_url, commit_id, message, created_time, creator, creator_email, project):
+        #created_time = datetime.now()
+        new_state = cls(commit_url=commit_url, commit_id=commit_id, message=message, created_time=created_time,
+                        creator=creator, creator_email=creator_email, project=project)
+        new_state.save()
+        return new_state
 
 
 class Label(models.Model):
