@@ -56,7 +56,7 @@
       <br />
       <div class="list-group">
         {% for milestone in milestones %}
-          <a class="list-group-item" >
+          <a class="list-group-item" href="{% url 'milestone_details' project.id milestone.id %}">
             <p>
               <strong>{{ milestone.title }}</strong>
             </p>

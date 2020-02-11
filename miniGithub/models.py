@@ -15,6 +15,7 @@ class Problem_State(Enum):
     OPEN = 1
     CLOSED = 2
 
+
 class Project(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
     git_repo = models.CharField(max_length=LENGTH_OF_FIELD)
@@ -111,7 +112,6 @@ class Change_Comment(Custom_Event):
         comment_change = cls(creator=creator, problem=problem, relatedComment=comment, created_time=created_time)
         comment_change.save()
         return comment_change
-
 
 
 class Change_State(Custom_Event):

@@ -1,0 +1,27 @@
+{% extends "miniGithub/base.html" %}
+{% block body_block %}
+    <h3>Edit new milestone for project {{ project.title }}</h3>
+
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+    <form action="" method="post">
+
+    {% csrf_token %}
+
+      <div class="form-group">
+        <label for="title">Title:</label>
+        <input type="text" name="title" class="form-control" placeholder="Title" value="{{milestone.title}}">
+      </div>
+      <div class="form-group">
+        <label for="due_date">Due date:</label>
+          <input type="date" name="due_date" class="form-control" placeholder="Due date" value="{{milestone.due_date}}">
+      </div>
+      <div class="form-group">
+        <label for="description">Description:</label>
+        <textarea rows="10" class="form-control" name="description" >{{milestone.description}}</textarea>
+      </div>
+      <div>
+          <input class="btn btn-success" type="submit" name="" value="Edit milestone">
+      </div>
+    </form>
+
+{% endblock %}
