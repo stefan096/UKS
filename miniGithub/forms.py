@@ -33,3 +33,9 @@ class MilestoneForm(forms.Form):
     title = forms.CharField(max_length=100, help_text="Milestone title")
     description = forms.CharField(max_length=500, help_text="Milestone description", required=False)
     due_date = forms.DateTimeField()
+
+    def method_to_construct(self, milestone):
+        self.title = milestone.title
+        self.description = milestone.description
+        self.due_date = milestone.due_date
+
