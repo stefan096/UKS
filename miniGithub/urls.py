@@ -29,5 +29,5 @@ urlpatterns = [
     path('login/', login_view, name="login"),
     path('signup/', signup_view, name="signup"),
     path('logout/', user_logout, name='logout'),
-    path('api/hello/', hello, name='hello'),
+    path('api/webhook_push/', webhook_push, name='webhook_push'),
 ]
