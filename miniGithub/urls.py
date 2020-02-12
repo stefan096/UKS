@@ -3,6 +3,7 @@ from django.urls import path
 
 from miniGithub.views.auth import *
 from miniGithub.views.projects import *
+from miniGithub.views.webhooks import *
 
 
 urlpatterns = [
@@ -32,4 +33,5 @@ urlpatterns = [
     path('login/', login_view, name="login"),
     path('signup/', signup_view, name="signup"),
     path('logout/', user_logout, name='logout'),
+    path('api/webhook_push/', webhook_push, name='webhook_push'),
 ]
