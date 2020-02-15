@@ -39,6 +39,7 @@ class Problem(models.Model):
     created_time = models.DateTimeField(null=True)
     base_problem = models.ForeignKey('self', related_name='problem', on_delete=models.CASCADE, null=True, blank=True)
     linked_milestone = models.ForeignKey(Milestone, on_delete=models.SET_NULL, null=True)
+    current_assignee = models.ForeignKey(User, related_name='assigned', on_delete=models.SET_NULL, null=True)
 
     @classmethod
     def create(cls, title, description, project, owner):
@@ -60,6 +61,12 @@ class Problem(models.Model):
     def link_to_milestone(self, current_user, milestone):
         self.linked_milestone = milestone
         new_event = Change_Milestone.create(current_user, milestone, self)
+        self.save()
+        return self
+    
+    def assign_user(self, current_user, assignee):
+        self.current_assignee = assignee
+        new_event = Change_Assignee.create(current_user, assignee, self)
         self.save()
         return self
 
@@ -129,9 +136,19 @@ class Change_State(Custom_Event):
         return new_state
 
 
-# class Change_Assignee(Custom_Event):
-#     assignee = models.ForeignKey(Custom_User, on_delete=models.CASCADE, null=True)
+class Change_Assignee(Custom_Event):
+    assignee = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
+    @classmethod
+    def create(cls, creator, assignee, problem):
+        created_time = datetime.now()
+        new_state = cls(creator=creator, problem=problem, assignee=assignee, created_time=created_time)
+        new_state.save()
+        return new_state
+    
+    @property
+    def is_assignment(self):
+        return True
 
 class Change_Milestone(Custom_Event):
     current_milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, null=True)
