@@ -8,8 +8,9 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from itertools import chain
 from operator import attrgetter
+from django.contrib.auth.models import User
 from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm
-from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone
+from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code
 from django.contrib import messages
 
 
@@ -70,6 +71,10 @@ def problem_view(request, project_id, problem_id):
     comments = Comment.objects.filter(problem=problem.id)
     state_changes = Change_State.objects.filter(problem=problem.id)
     milestone_changes = Change_Milestone.objects.filter(problem=problem.id)
+    assignee_changes = Change_Assignee.objects.filter(problem=problem.id)
+    code_changes = Change_Code.objects.filter(problem=problem.id)
+    for assignment in assignee_changes:    
+        print(assignment.assignee is None)
     if (state_changes.last()):
         problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
     else:
@@ -79,7 +84,7 @@ def problem_view(request, project_id, problem_id):
         comment.editCounts = edits.count()
         comment.edits = edits
         comment.editsSorted = edits[::-1]
-    timeline = sorted(chain(comments, state_changes, milestone_changes), key=attrgetter('created_time'))
+    timeline = sorted(chain(comments, state_changes, milestone_changes, assignee_changes, code_changes), key=attrgetter('created_time'))
     return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline})
 
 @login_required
@@ -87,7 +92,6 @@ def set_milestone_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     project_milestones = Milestone.objects.filter(project=project_id)
     return render(request, 'miniGithub/link_milestone.html', {'problem': problem, 'milestones': project_milestones})
-
 
 @login_required
 def set_milestone(request, project_id, problem_id, milestone_id):
@@ -97,6 +101,27 @@ def set_milestone(request, project_id, problem_id, milestone_id):
     problem = problem.link_to_milestone(current_user, milestone)
     return redirect(reverse('problem_details', args=[project_id, problem_id]))
 
+@login_required
+def set_assignee_view(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    project = get_object_or_404(Project, pk=project_id)
+    project_collaborators =  list(project.collaborators.all())
+    project_collaborators.append(project.owner)
+    project_collaborators = list(filter(lambda item: item != problem.current_assignee, project_collaborators))
+    return render(request, 'miniGithub/assign_user.html', {'problem': problem, 'collaborators': project_collaborators})
+
+@login_required
+def set_assignee(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    assignee_id = request.POST['assignee']
+    print (assignee_id)
+    current_user = request.user
+    if (assignee_id == ""):
+        problem = problem.assign_user(current_user, None)
+    else:
+        user = get_object_or_404(User, pk=assignee_id)
+        problem = problem.assign_user(current_user, user)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
 
 @login_required
 def edit_comment_view(request, project_id, problem_id, comment_id): 

@@ -80,6 +80,40 @@
               {{ item.created_time|naturaltime }}
             </p>
           </div>
+        {% elif item.is_assignment %}
+          <div>
+            {% if item.creator == item.assignee %}
+              <p>
+                <span class="glyphicon glyphicon-user"></span>
+                <strong>{{ item.creator }}</strong>
+                <span> self assigned this problem </span>
+                {{ item.created_time|naturaltime }}
+              </p>
+            {% elif item.assignee is None %}
+              <p>
+                <span class="glyphicon glyphicon-user"></span>
+                <strong>{{ item.creator }}</strong>
+                <span> removed previous user assignment to this problem </span>
+                {{ item.created_time|naturaltime }}
+              </p>
+            {% else %}
+              <p>
+                <span class="glyphicon glyphicon-user"></span>
+                <strong>{{ item.creator }}</strong>
+                <span> has assigned this problem to user <strong><i>{{item.assignee}}</i></strong> </span>
+                {{ item.created_time|naturaltime }}
+              </p>
+            {% endif %}
+          </div>
+        {% elif item.commit_url %}
+          <div>
+            <p>
+              <span class="glyphicon glyphicon-code"></span>
+              <strong>{{ item.creator }}</strong>
+              <span> referenced this problem in commit <a href={{item.commit_url}}><strong><i>{{item.commit_id}}</i></strong></a> </span>
+              {{ item.created_time|naturaltime }}
+            </p>
+          </div>
         {% elif item.current_state %}
           <div>
               {% if item.current_state == '1' %}
@@ -132,17 +166,36 @@
   </div>
   <div class="col-md-3">
     <div>
+      <a href="set_assignee/">
+        <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+        &nbsp;&nbsp;&nbsp;
+        <strong>Assignee</strong>
+      </a>
+      <p>
+        <br />
+        {% if problem.current_assignee %}
+          {{ problem.current_assignee.username }}
+        {% else %}
+          No one
+        {% endif %}
+        <br />
+      </p>
+    </div>
+    <hr/>
+    <div>
       <a href="set_milestone/">
         <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
         &nbsp;&nbsp;&nbsp;
         <strong>Milestone</strong>
       </a>
       <p>
+        <br />
         {% if problem.linked_milestone %}
           {{ problem.linked_milestone.title }}
         {% else %}
           None
         {% endif %}
+        <br />
       </p>
     </div>
   </div>
