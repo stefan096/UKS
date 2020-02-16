@@ -3,8 +3,16 @@ language: python
 python:
   - "3.4"
 
+services:
+  - docker
+
 install:
   - pip install -r requirements.txt
 
 script:
   - python3 manage.py test
+  - docker build -t $DOCKER_USERNAME/uks:latest .
+
+after_success:
+  - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+  - docker push $DOCKER_USERNAME/uks:latest
