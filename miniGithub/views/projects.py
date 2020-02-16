@@ -9,8 +9,8 @@ from django.contrib.auth.decorators import login_required
 from itertools import chain
 from operator import attrgetter
 from django.contrib.auth.models import User
-from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm
-from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code
+from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm, LabelForm
+from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code, Label
 from django.contrib import messages
 
 
@@ -34,6 +34,10 @@ def project_view(request, project_id, tab_name):
         project_milestones = Milestone.objects.filter(project=project_id)
         return render(request, 'miniGithub/project_details.html',
                   {'project': project, 'milestones': project_milestones, 'tab_name': tab_name})
+    elif tab_name == 'labels':
+        project_labels = Label.objects.filter(project=project_id)
+        return render(request, 'miniGithub/project_details.html',
+                  {'project': project, 'labels': project_labels, 'tab_name': tab_name})
 
     return render(request, 'miniGithub/project_details.html',
                   {'project': project, 'problems': project_problems, 'tab_name': tab_name})
@@ -168,6 +172,51 @@ def add_milestone_view(request, project_id):
     else:
         form = MilestoneForm()
     return render(request, 'miniGithub/add_milestone.html', {'form': form, 'project': project})
+
+@login_required
+def add_label_view(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    form = LabelForm(request.POST)
+    if form.is_valid():
+        title = form.cleaned_data.get('title')
+        color = form.cleaned_data.get('color')
+        label = Label(title=title, color=color, project=project)
+        label.save()
+        return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'labels'}))
+    else:
+        form = LabelForm()
+    return render(request, 'miniGithub/add_label.html', {'form': form, 'project': project})
+
+@login_required
+def edit_label_view(request, project_id, label_id):
+    project = get_object_or_404(Project, pk=project_id)
+    form = LabelForm(request.POST)
+    if form.is_valid():
+        label = Label.objects.get(pk=label_id)
+        label.title = form.cleaned_data.get('title')
+        label.color = form.cleaned_data.get('color')
+        label.save()
+        return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'labels'}))
+    else:
+        found_label = Label.objects.get(pk=label_id)
+    return render(request, 'miniGithub/edit_label.html', {'form': form, 'project': project, 'label': found_label})
+
+
+@login_required
+def label_details(request, project_id, label_id):
+    project = get_object_or_404(Project, pk=project_id)
+    label = Label.objects.get(pk=label_id)
+    problems = Problem.objects.filter(labels=label.id)
+
+    for one_problem in problems:
+        state_changes = Change_State.objects.filter(problem=one_problem.id)
+        if state_changes.last():
+            one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+        else:
+            one_problem.is_open = True
+
+    return render(request, 'miniGithub/label_details.html', {'project': project, 'label': label,
+                                                                 'problems': problems})
 
 
 @login_required

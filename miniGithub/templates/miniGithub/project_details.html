@@ -15,6 +15,9 @@
     <li class="{% if tab_name == 'milestones' %}active{% endif %}">
       <a data-toggle="tab" href="{% url 'project_details' project.id 'milestones' %}">Milestones</a>
     </li>
+    <li class="{% if tab_name == 'labels' %}active{% endif %}">
+      <a data-toggle="tab" href="{% url 'project_details' project.id 'labels' %}">Labels</a>
+    </li>
   </ul>
   <div class="panel-body">
     <div class="tab-content">
@@ -72,6 +75,31 @@
       </div>
     </div>
 
+
+    <div class="tab-content">
+      <div id="labels" class="tab-pane {% if tab_name == 'labels' %}active{% endif %}">
+      <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+          <a href="{% url 'add_label' project.id %}">
+            <button type="button" class="btn btn-success">Add label</button>
+          </a>
+        </div>
+      </div>
+      <br />
+      <div class="list-group">
+        {% for label in labels %}
+          <a class="list-group-item" href="{% url 'label_details' project.id label.id %}">
+            <p>
+              <span class="label label-default" style="background-color:{{label.color}}!important;">
+                {{ label.title }}
+              </span>
+            </p>
+          </a>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
 {% endblock %}
 

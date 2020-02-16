@@ -79,6 +79,15 @@ class Problem(models.Model):
         self.save()
         return self
 
+    def add_label(self, label):
+        self.labels.add(label)
+        self.save()
+        return self
+
+    def remove_label(self, label):
+        self.labels.remove(label)
+        self.save()
+        return self
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -192,4 +201,5 @@ class Change_Code(models.Model):
 class Label(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
     color = models.CharField(max_length=LENGTH_OF_FIELD)
-    # problem = models.ForeignKey(Problem, on_delete=models.CASCADE, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    problems = models.ManyToManyField(Problem, related_name='labels')

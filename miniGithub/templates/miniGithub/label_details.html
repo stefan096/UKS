@@ -1,0 +1,52 @@
+{% extends "miniGithub/base.html" %}
+{% load humanize %}
+{% block body_block %}
+  <h3>
+    <span class="label label-lg" style="background-color: {{label.color}} !important;">
+      {{label.title}}
+    </span>
+  </h3>
+  <h5>
+    Problems from project {{project.title}} assigned to this label
+  </h5>
+
+  <div class="panel-body">
+      <div class="row">
+        <div class="col-md-2" >
+          <a href="edit/" >
+            <button type="button" class="btn btn-success" >Edit label</button>
+          </a>
+        </div>
+        <div class="col-md-2" style="padding: 0px; width: auto;">
+          <a href="1" >
+            <button type="button" class="btn btn-light">opened</button>
+          </a>
+        </div>
+        <div class="col-md-2" style="padding: 0px; width: auto;">
+        <a href="0">
+          <button type="button" class="btn btn-info">closed</button>
+        </a>
+        </div>
+      </div>
+      <br />
+      <div class="list-group">
+        {% for problem in problems %}
+          <a class="list-group-item" href="/projects/{{ project.id }}/problems/{{ problem.id }}">
+            <p>
+              <strong>{{ problem.title }}</strong>
+              {% if problem.is_open  %}
+                OPENED
+              {% else %}
+                CLOSED
+              {% endif %}
+            </p>
+            <p class="text-muted">
+              #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
+            </p>
+          </a>
+        {% endfor %}
+    </div>
+  </div>
+
+{% endblock %}
+
