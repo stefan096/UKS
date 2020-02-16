@@ -1,0 +1,77 @@
+{% extends "miniGithub/base.html" %}
+{% load humanize %}
+{% block body_block %}
+  <h3>{{project.title}}</h3>
+  <h5>
+    <a href="{{project.git_repo}}">
+      {{ project.git_repo }}
+    </a>
+  </h5>
+
+  <ul class="nav nav-tabs">
+    <li class="{% if tab_name == 'problems' %}active{% endif %}">
+      <a data-toggle="tab" href="{% url 'project_details' project.id 'problems' %}">Problems</a>
+    </li>
+    <li class="{% if tab_name == 'milestones' %}active{% endif %}">
+      <a data-toggle="tab" href="{% url 'project_details' project.id 'milestones' %}">Milestones</a>
+    </li>
+  </ul>
+  <div class="panel-body">
+    <div class="tab-content">
+      <div id="problems" class="tab-pane {% if tab_name == 'problems' %}active{% endif %}">
+      <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+          <a href="{% url 'add_problem' project.id %}">
+            <button type="button" class="btn btn-success">Report problem</button>
+          </a>
+        </div>
+      </div>
+      <br />
+      <div class="list-group">
+        {% for problem in problems %}
+          <a class="list-group-item" href="/projects/{{ project.id }}/problems/{{ problem.id }}">
+            <p>
+              <strong>{{ problem.title }}</strong>
+            </p>
+            <p class="text-muted">
+              #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
+            </p>
+          </a>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
+
+     <div class="tab-content">
+      <div id="milestones" class="tab-pane {% if tab_name == 'milestones' %}active{% endif %}">
+      <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+          <a href="{% url 'add_milestone' project.id %}">
+            <button type="button" class="btn btn-success">Report milestone</button>
+          </a>
+        </div>
+      </div>
+      <br />
+      <div class="list-group">
+        {% for milestone in milestones %}
+          <a class="list-group-item" href="{% url 'milestone_details' project.id milestone.id %}">
+            <p>
+              <strong>{{ milestone.title }}</strong>
+            </p>
+            <p class="text-muted">
+              #{{milestone.id}} opened {{milestone.created_time|naturaltime}} due {{milestone.due_date|naturaltime}}
+            </p>
+             <p class="text-muted">
+               {{milestone.description}}
+             </p>
+          </a>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}
+

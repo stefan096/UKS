@@ -1,0 +1,61 @@
+{% extends "miniGithub/base.html" %}
+{% block body_block %}
+
+<style>
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+</style>
+
+  <h2>Collaborators</h2>
+
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Email</th>
+      <th>First Name</th>
+      <th>Last name</th>
+      <th>Delete from project</th>
+    </tr>
+  {% for collaborator in collaborators %}
+        <tr>
+
+          <td>
+            {{forloop.counter}}
+          </td>
+
+          <td>
+              {{ collaborator.email }}
+          </td>
+
+          <td>
+              {{ collaborator.first_name }}
+          </td>
+
+          <td>
+              {{ collaborator.last_name }}
+          </td>
+          <td>
+              <a href="collaborators/{{ collaborator.id }}/delete/">
+                Delete
+              </a>
+          </td>
+        </tr>
+  {% endfor %}
+  </table>
+{% endblock %}
+
+
+

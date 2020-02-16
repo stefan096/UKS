@@ -1,0 +1,66 @@
+{% extends "miniGithub/base.html" %}
+{% block body_block %}
+
+<style>
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+</style>
+
+  <h2>My Projects</h2>
+
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Title</th>
+      <th>Show Collaborators</th>
+      <th>Add collaborator</th>
+      <th>Edit project</th>
+    </tr>
+  {% for project in projects %}
+        <tr>
+
+          <td>
+            {{forloop.counter}}
+          </td>
+
+          <td>
+            <a href="/projects/{{ project.id }}/problems/">
+                {{ project.title }}
+            </a>
+          </td>
+
+          <td>
+            <a href="/projects/{{ project.id }}/collaborators">
+              Collaborators
+            </a>
+          </td>
+
+          <td>
+            <a href="/add_collaborator/{{ project.id }}/view/">
+              Add collaborator
+            </a>
+          </td>
+
+          <td>
+            <a href="/projects/add_edit/{{ project.id }}/">
+              Edit
+            </a>
+          </td>
+        </tr>
+  {% endfor %}
+  </table>
+{% endblock %}
+
