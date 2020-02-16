@@ -50,6 +50,15 @@ class Problem(models.Model):
         state = Change_State.create(owner, Problem_State['OPEN'].value, problem)
         return problem
 
+    def get_comments(self):
+        return Comment.objects.filter(problem=self.id)
+    
+    def get_state_changes(self):
+        return Change_State.objects.filter(problem=self.id)
+
+    def get_assignee_changes(self):
+        return Change_Assignee.objects.filter(problem=self.id)
+
     def close_problem(self, current_user):
         state = Change_State.create(current_user, Problem_State['CLOSED'].value, self)
         return self
