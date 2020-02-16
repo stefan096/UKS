@@ -5,7 +5,8 @@ services:
   web:
     # Build our docker application
     # instead of build we could use image: stefan096/image_from_docker_hub
-    build: .
+    # build: .     
+    image: stefan096/uks:latest
 
     # Set volumes as we did before in docker run
 #    volumes:

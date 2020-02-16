@@ -9,7 +9,7 @@ WORKDIR /usr/src/uksProject
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY ./uksProject .
+COPY . .
 
 EXPOSE 5000
 CMD ["python", "manage.py", "runserver", "0.0.0.0:5000"]
