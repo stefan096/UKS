@@ -10,7 +10,7 @@ from itertools import chain
 from operator import attrgetter
 from django.contrib.auth.models import User
 from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm, LabelForm
-from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code, Label
+from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code, Change_Label, Label
 from django.contrib import messages
 
 
@@ -77,6 +77,7 @@ def problem_view(request, project_id, problem_id):
     milestone_changes = Change_Milestone.objects.filter(problem=problem.id)
     assignee_changes = Change_Assignee.objects.filter(problem=problem.id)
     code_changes = Change_Code.objects.filter(problem=problem.id)
+    label_changes = Change_Label.objects.filter(problem=problem.id)
     for assignment in assignee_changes:    
         print(assignment.assignee is None)
     if (state_changes.last()):
@@ -88,8 +89,9 @@ def problem_view(request, project_id, problem_id):
         comment.editCounts = edits.count()
         comment.edits = edits
         comment.editsSorted = edits[::-1]
-    timeline = sorted(chain(comments, state_changes, milestone_changes, assignee_changes, code_changes), key=attrgetter('created_time'))
-    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline})
+    timeline = sorted(chain(comments, state_changes, milestone_changes, assignee_changes, code_changes, label_changes), key=attrgetter('created_time'))
+    labels = problem.labels.all()
+    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline, 'labels': labels})
 
 @login_required
 def set_milestone_view(request, project_id, problem_id):
@@ -97,6 +99,33 @@ def set_milestone_view(request, project_id, problem_id):
     project_milestones = Milestone.objects.filter(project=project_id)
     return render(request, 'miniGithub/link_milestone.html', {'problem': problem, 'milestones': project_milestones})
 
+@login_required
+def link_labels_view(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    labels = Label.objects.filter(project=project_id)
+    for label in labels:
+        if problem.labels.filter(id=label.id).exists():
+            label.linked = True
+        else:
+            label.linked = False
+    return render(request, 'miniGithub/link_labels.html', {'problem': problem, 'labels': labels})
+
+@login_required
+def unlink_label(request, project_id, problem_id, label_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    label = get_object_or_404(Label, pk=label_id)
+    current_user = request.user
+    problem = problem.remove_label(current_user, label)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
+@login_required
+def link_label(request, project_id, problem_id, label_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    label = get_object_or_404(Label, pk=label_id)
+    current_user = request.user
+    problem = problem.add_label(current_user, label)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
+    
 @login_required
 def set_milestone(request, project_id, problem_id, milestone_id):
     problem = get_object_or_404(Problem, pk=problem_id)

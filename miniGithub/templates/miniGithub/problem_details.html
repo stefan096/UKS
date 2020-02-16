@@ -80,6 +80,25 @@
               {{ item.created_time|naturaltime }}
             </p>
           </div>
+        {% elif item.label %}
+          <div>
+            <p>
+              <span class="glyphicon glyphicon-tag"></span>
+              <strong>{{ item.creator }}</strong>
+              <span>
+                {% if item.is_linking_event %}
+                  added the
+                {% else %}
+                  removed the
+                {% endif %}
+                <span class="label" style="background-color: {{item.label.color}}!important;">
+                  {{item.label.title}}
+                </span>
+                &nbsp;label
+              </span>
+              {{ item.created_time|naturaltime }}
+            </p>
+          </div>
         {% elif item.is_assignment %}
           <div>
             {% if item.creator == item.assignee %}
@@ -108,9 +127,9 @@
         {% elif item.commit_url %}
           <div>
             <p>
-              <span class="glyphicon glyphicon-code"></span>
+              <span class="glyphicon glyphicon-link"></span>
               <strong>{{ item.creator }}</strong>
-              <span> referenced this problem in commit <a href={{item.commit_url}}><strong><i>{{item.commit_id}}</i></strong></a> </span>
+              <span> referenced this problem in <a href={{item.commit_url}}>a commit</a> </span>
               {{ item.created_time|naturaltime }}
             </p>
           </div>
@@ -195,6 +214,26 @@
         {% else %}
           None
         {% endif %}
+        <br />
+      </p>
+    </div>
+    <hr/>
+    <div>
+      <a href="link_labels/">
+        <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+        &nbsp;&nbsp;&nbsp;
+        <strong>Labels</strong>
+      </a>
+      <p>
+        {% for label in labels %}
+          <p>
+            <span class="label" style="background-color: {{label.color}}!important;">
+              {{label.title}}
+            </span>
+          </p>
+        {% empty %}
+          <p>None</p>
+        {% endfor %}
         <br />
       </p>
     </div>

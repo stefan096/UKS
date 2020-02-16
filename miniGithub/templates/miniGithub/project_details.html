@@ -41,6 +41,8 @@
               #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
             </p>
           </a>
+        {% empty %}
+          <p>There are currently no problems reported</p>
         {% endfor %}
         </div>
       </div>
@@ -70,6 +72,8 @@
                {{milestone.description}}
              </p>
           </a>
+        {% empty %}
+          <p>There are currently no milestones added for this project</p>
         {% endfor %}
         </div>
       </div>
@@ -96,6 +100,8 @@
               </span>
             </p>
           </a>
+        {% empty %}
+          <p>There are currently no labels added for this project</p>
         {% endfor %}
         </div>
       </div>

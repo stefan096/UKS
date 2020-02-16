@@ -79,13 +79,15 @@ class Problem(models.Model):
         self.save()
         return self
 
-    def add_label(self, label):
+    def add_label(self, current_user, label):
         self.labels.add(label)
+        label = Change_Label.create(current_user, label, True, self)
         self.save()
         return self
 
-    def remove_label(self, label):
+    def remove_label(self, current_user, label):
         self.labels.remove(label)
+        label = Change_Label.create(current_user, label, False, self)
         self.save()
         return self
 
@@ -203,3 +205,14 @@ class Label(models.Model):
     color = models.CharField(max_length=LENGTH_OF_FIELD)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     problems = models.ManyToManyField(Problem, related_name='labels')
+
+class Change_Label(Custom_Event):
+    label = models.ForeignKey(Label, on_delete=models.CASCADE, null=True)
+    is_linking_event = models.BooleanField()
+
+    @classmethod
+    def create(cls, creator, label, is_linking_event, problem):
+        created_time = datetime.now()
+        new_state = cls(creator=creator, problem=problem, label=label, created_time=created_time, is_linking_event=is_linking_event)
+        new_state.save()
+        return new_state
