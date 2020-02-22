@@ -32,8 +32,67 @@ def project_view(request, project_id, tab_name):
                       {'project': project, 'problems': project_problems, 'tab_name': tab_name})
     elif tab_name == 'milestones':
         project_milestones = Milestone.objects.filter(project=project_id)
+        ret_val = []
+
+        for one_milestones in project_milestones:
+            state_changes = Change_Milestone.objects.filter(current_milestone=one_milestones.id)
+
+            if state_changes.last():
+                if state_changes.last().current_state == None:
+                    one_milestones.is_open = False
+                elif int(state_changes.last().current_state) == Problem_State.CLOSED.value:
+                    one_milestones.is_open = False
+                else:
+                    one_milestones.is_open = True
+            else:
+                one_milestones.is_open = True
+
+            ret_val.append(one_milestones)
+
         return render(request, 'miniGithub/project_details.html',
-                  {'project': project, 'milestones': project_milestones, 'tab_name': tab_name})
+                  {'project': project, 'milestones': ret_val, 'tab_name': tab_name})
+
+    return render(request, 'miniGithub/project_details.html',
+                  {'project': project, 'problems': project_problems, 'tab_name': tab_name})
+
+
+@login_required
+def project_view_filter(request, project_id, tab_name, action):
+    project = get_object_or_404(Project, pk=project_id)
+    project_problems = []
+    if tab_name == 'problems':
+        project_problems = Problem.objects.filter(project=project_id)
+        return render(request, 'miniGithub/project_details.html',
+                      {'project': project, 'problems': project_problems, 'tab_name': tab_name})
+    elif tab_name == 'milestones':
+        project_milestones = Milestone.objects.filter(project=project_id)
+        ret_val = []
+
+        for one_milestones in project_milestones:
+            state_changes = Change_Milestone.objects.filter(current_milestone=one_milestones.id)
+
+            if state_changes.last():
+                if state_changes.last().current_state == None:
+                    one_milestones.is_open = False
+                elif int(state_changes.last().current_state) == Problem_State.CLOSED.value:
+                    one_milestones.is_open = False
+                else:
+                    one_milestones.is_open = True
+
+                if one_milestones.is_open == action:
+                    ret_val.append(one_milestones)
+                elif action == -1:
+                    ret_val.append(one_milestones)
+            else:
+                one_milestones.is_open = True
+
+                if one_milestones.is_open == action:
+                    ret_val.append(one_milestones)
+                elif action == -1:
+                    ret_val.append(one_milestones)
+
+        return render(request, 'miniGithub/project_details.html',
+                  {'project': project, 'milestones': ret_val, 'tab_name': tab_name})
 
     return render(request, 'miniGithub/project_details.html',
                   {'project': project, 'problems': project_problems, 'tab_name': tab_name})
@@ -87,11 +146,13 @@ def problem_view(request, project_id, problem_id):
     timeline = sorted(chain(comments, state_changes, milestone_changes, assignee_changes, code_changes), key=attrgetter('created_time'))
     return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline})
 
+
 @login_required
 def set_milestone_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     project_milestones = Milestone.objects.filter(project=project_id)
     return render(request, 'miniGithub/link_milestone.html', {'problem': problem, 'milestones': project_milestones})
+
 
 @login_required
 def set_milestone(request, project_id, problem_id, milestone_id):
@@ -101,6 +162,22 @@ def set_milestone(request, project_id, problem_id, milestone_id):
     problem = problem.link_to_milestone(current_user, milestone)
     return redirect(reverse('problem_details', args=[project_id, problem_id]))
 
+
+@login_required
+def close_milestone(request, project_id, milestone_id):
+    milestone = get_object_or_404(Milestone, pk=milestone_id)
+    current_user = request.user
+    milestone.close_milestone(current_user)
+    return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'milestones'}))
+
+
+@login_required
+def open_milestone(request, project_id, milestone_id):
+    milestone = get_object_or_404(Milestone, pk=milestone_id)
+    current_user = request.user
+    milestone.open_milestone(current_user)
+    return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'milestones'}))
+
 @login_required
 def set_assignee_view(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
@@ -109,6 +186,7 @@ def set_assignee_view(request, project_id, problem_id):
     project_collaborators.append(project.owner)
     project_collaborators = list(filter(lambda item: item != problem.current_assignee, project_collaborators))
     return render(request, 'miniGithub/assign_user.html', {'problem': problem, 'collaborators': project_collaborators})
+
 
 @login_required
 def set_assignee(request, project_id, problem_id):
@@ -122,6 +200,7 @@ def set_assignee(request, project_id, problem_id):
         user = get_object_or_404(User, pk=assignee_id)
         problem = problem.assign_user(current_user, user)
     return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
 
 @login_required
 def edit_comment_view(request, project_id, problem_id, comment_id): 
