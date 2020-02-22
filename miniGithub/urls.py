@@ -8,7 +8,7 @@ from miniGithub.views.webhooks import *
 
 urlpatterns = [
     path('', projects_view, name="projects"),
-    path('projects/<int:project_id>/<str:tab_name>/', project_view, name='project_details'),
+    path('projects/<int:project_id>/<str:tab_name>/', project_view, name='project_details'), 
     path('projects/<int:project_id>/<str:tab_name>/<int:action>', project_view_filter, name='project_view_filter'),
     path('projects/add_edit/<int:project_id>/', project_add_edit, name='project_add_edit'),
     path('projects/add_edit/<int:project_id>/project_save', project_save, name='project_save'),
