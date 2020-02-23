@@ -47,6 +47,10 @@ class Milestone(models.Model):
         state = Change_Milestone.create(creator=current_user, problem=None, state=Milestone_State['CLOSED'].value, milestone=self)
         return self
 
+    def close_milestone_problem(self, current_user, problem):
+        state = Change_Milestone.create(creator=current_user, problem=problem, state=Milestone_State['CLOSED'].value, milestone=self)
+        return self
+
     def open_milestone(self, current_user):
         state = Change_Milestone.create(creator=current_user, problem=None, state=Milestone_State['OPEN'].value, milestone=self)
         return self
