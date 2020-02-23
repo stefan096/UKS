@@ -28,8 +28,27 @@ def project_view(request, project_id, tab_name):
     project_problems = []
     if tab_name == 'problems':
         project_problems = Problem.objects.filter(project=project_id)
+
+        ret_val = []
+
+        for one_problem in project_problems:
+            state_changes = Change_State.objects.filter(problem=one_problem.id)
+
+            if state_changes.last():
+                if state_changes.last().current_state == None:
+                    one_problem.is_open = False
+                elif int(state_changes.last().current_state) == Problem_State.CLOSED.value:
+                    one_problem.is_open = False
+                else:
+                    one_problem.is_open = True
+            else:
+                one_problem.is_open = True
+
+            ret_val.append(one_problem)
+
         return render(request, 'miniGithub/project_details.html',
-                      {'project': project, 'problems': project_problems, 'tab_name': tab_name})
+                      {'project': project, 'problems': ret_val, 'tab_name': tab_name})
+
     elif tab_name == 'milestones':
         project_milestones = Milestone.objects.filter(project=project_id)
         ret_val = []
@@ -62,8 +81,38 @@ def project_view_filter(request, project_id, tab_name, action):
     project_problems = []
     if tab_name == 'problems':
         project_problems = Problem.objects.filter(project=project_id)
+
+        ret_val = []
+
+        for one_problem in project_problems:
+            state_changes = Change_State.objects.filter(problem=one_problem.id)
+
+            if state_changes.last():
+                if state_changes.last().current_state == None:
+                    one_problem.is_open = False
+                elif int(state_changes.last().current_state) == Problem_State.CLOSED.value:
+                    one_problem.is_open = False
+                else:
+                    one_problem.is_open = True
+
+                if one_problem.is_open is True and action == 999999999:
+                    ret_val.append(one_problem)
+                elif one_problem.is_open == action:
+                    ret_val.append(one_problem)
+                elif action == -1:
+                    ret_val.append(one_problem)
+            else:
+                one_problem.is_open = True
+
+                if one_problem.is_open is True and action == 999999999:
+                    ret_val.append(one_problem)
+                elif one_problem.is_open == action:
+                    ret_val.append(one_problem)
+                elif action == -1:
+                    ret_val.append(one_problem)
+
         return render(request, 'miniGithub/project_details.html',
-                      {'project': project, 'problems': project_problems, 'tab_name': tab_name})
+                      {'project': project, 'problems': ret_val, 'tab_name': tab_name})
     elif tab_name == 'milestones':
         project_milestones = Milestone.objects.filter(project=project_id)
         ret_val = []
