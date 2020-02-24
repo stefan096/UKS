@@ -15,6 +15,9 @@
     <li class="{% if tab_name == 'milestones' %}active{% endif %}">
       <a data-toggle="tab" href="{% url 'project_details' project.id 'milestones' %}">Milestones</a>
     </li>
+    <li class="{% if tab_name == 'labels' %}active{% endif %}">
+      <a data-toggle="tab" href="{% url 'project_details' project.id 'labels' %}">Labels</a>
+    </li>
   </ul>
   <div class="panel-body">
     <div class="tab-content">
@@ -56,6 +59,8 @@
               #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
             </p>
           </a>
+        {% empty %}
+          <p>There are currently no problems reported</p>
         {% endfor %}
         </div>
       </div>
@@ -103,17 +108,45 @@
              </p>
           </a>
 
-        {% if milestone.is_open  %}
+          {% if milestone.is_open  %}
             <button type="submit" onclick="location.href='/projects/{{project.id}}/milestones/{{milestone.id}}/close/'">CLOSE</button>
           {% else %}
             <button type="submit" onclick="location.href='/projects/{{project.id}}/milestones/{{milestone.id}}/open/'">OPEN</button>
           {% endif %}
-
+        {% empty %}
+        <p>There are currently no milestones added for this project</p>
         {% endfor %}
         </div>
       </div>
     </div>
 
+
+    <div class="tab-content">
+      <div id="labels" class="tab-pane {% if tab_name == 'labels' %}active{% endif %}">
+      <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+          <a href="{% url 'add_label' project.id %}">
+            <button type="button" class="btn btn-success">Add label</button>
+          </a>
+        </div>
+      </div>
+      <br />
+      <div class="list-group">
+        {% for label in labels %}
+          <a class="list-group-item" href="{% url 'label_details' project.id label.id %}">
+            <p>
+              <span class="label label-default" style="background-color:{{label.color}}!important;">
+                {{ label.title }}
+              </span>
+            </p>
+          </a>
+        {% empty %}
+          <p>There are currently no labels added for this project</p>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
   </div>
 {% endblock %}
 

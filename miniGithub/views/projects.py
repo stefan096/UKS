@@ -9,8 +9,8 @@ from django.contrib.auth.decorators import login_required
 from itertools import chain
 from operator import attrgetter
 from django.contrib.auth.models import User
-from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm
-from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code
+from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm, LabelForm
+from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code, Change_Label, Label
 from django.contrib import messages
 
 
@@ -70,6 +70,10 @@ def project_view(request, project_id, tab_name):
 
         return render(request, 'miniGithub/project_details.html',
                   {'project': project, 'milestones': ret_val, 'tab_name': tab_name})
+    elif tab_name == 'labels':
+        project_labels = Label.objects.filter(project=project_id)
+        return render(request, 'miniGithub/project_details.html',
+                  {'project': project, 'labels': project_labels, 'tab_name': tab_name})
 
     return render(request, 'miniGithub/project_details.html',
                   {'project': project, 'problems': project_problems, 'tab_name': tab_name})
@@ -181,6 +185,7 @@ def problem_view(request, project_id, problem_id):
     milestone_changes = Change_Milestone.objects.filter(problem=problem.id)
     assignee_changes = Change_Assignee.objects.filter(problem=problem.id)
     code_changes = Change_Code.objects.filter(problem=problem.id)
+    label_changes = Change_Label.objects.filter(problem=problem.id)
     for assignment in assignee_changes:    
         print(assignment.assignee is None)
     if (state_changes.last()):
@@ -192,8 +197,9 @@ def problem_view(request, project_id, problem_id):
         comment.editCounts = edits.count()
         comment.edits = edits
         comment.editsSorted = edits[::-1]
-    timeline = sorted(chain(comments, state_changes, milestone_changes, assignee_changes, code_changes), key=attrgetter('created_time'))
-    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline})
+    timeline = sorted(chain(comments, state_changes, milestone_changes, assignee_changes, code_changes, label_changes), key=attrgetter('created_time'))
+    labels = problem.labels.all()
+    return render(request, 'miniGithub/problem_details.html', {'problem': problem, 'timeline': timeline, 'labels': labels})
 
 
 @login_required
@@ -203,6 +209,33 @@ def set_milestone_view(request, project_id, problem_id):
     return render(request, 'miniGithub/link_milestone.html', {'problem': problem, 'milestones': project_milestones})
 
 
+@login_required
+def link_labels_view(request, project_id, problem_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    labels = Label.objects.filter(project=project_id)
+    for label in labels:
+        if problem.labels.filter(id=label.id).exists():
+            label.linked = True
+        else:
+            label.linked = False
+    return render(request, 'miniGithub/link_labels.html', {'problem': problem, 'labels': labels})
+
+@login_required
+def unlink_label(request, project_id, problem_id, label_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    label = get_object_or_404(Label, pk=label_id)
+    current_user = request.user
+    problem = problem.remove_label(current_user, label)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
+
+@login_required
+def link_label(request, project_id, problem_id, label_id):
+    problem = get_object_or_404(Problem, pk=problem_id)
+    label = get_object_or_404(Label, pk=label_id)
+    current_user = request.user
+    problem = problem.add_label(current_user, label)
+    return redirect(reverse('problem_details', args=[project_id, problem_id]))
+    
 @login_required
 def set_milestone(request, project_id, problem_id, milestone_id):
     problem = get_object_or_404(Problem, pk=problem_id)
@@ -296,6 +329,75 @@ def add_milestone_view(request, project_id):
     else:
         form = MilestoneForm()
     return render(request, 'miniGithub/add_milestone.html', {'form': form, 'project': project})
+
+@login_required
+def add_label_view(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    form = LabelForm(request.POST)
+    if form.is_valid():
+        title = form.cleaned_data.get('title')
+        color = form.cleaned_data.get('color')
+        label = Label(title=title, color=color, project=project)
+        label.save()
+        return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'labels'}))
+    else:
+        form = LabelForm()
+    return render(request, 'miniGithub/add_label.html', {'form': form, 'project': project})
+
+@login_required
+def edit_label_view(request, project_id, label_id):
+    project = get_object_or_404(Project, pk=project_id)
+    form = LabelForm(request.POST)
+    if form.is_valid():
+        label = Label.objects.get(pk=label_id)
+        label.title = form.cleaned_data.get('title')
+        label.color = form.cleaned_data.get('color')
+        label.save()
+        return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'labels'}))
+    else:
+        found_label = Label.objects.get(pk=label_id)
+    return render(request, 'miniGithub/edit_label.html', {'form': form, 'project': project, 'label': found_label})
+
+
+@login_required
+def label_details(request, project_id, label_id):
+    project = get_object_or_404(Project, pk=project_id)
+    label = Label.objects.get(pk=label_id)
+    problems = Problem.objects.filter(labels=label.id)
+
+    for one_problem in problems:
+        state_changes = Change_State.objects.filter(problem=one_problem.id)
+        if state_changes.last():
+            one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+        else:
+            one_problem.is_open = True
+
+    return render(request, 'miniGithub/label_details.html', {'project': project, 'label': label,
+                                                                 'problems': problems})
+
+
+@login_required
+def label_details_action(request, project_id, label_id, action):
+    project = get_object_or_404(Project, pk=project_id)
+    label = Label.objects.get(pk=label_id)
+    problems = Problem.objects.filter(labels=label.id)
+    ret_val = []
+
+    for one_problem in problems:
+        state_changes = Change_State.objects.filter(problem=one_problem.id)
+        if state_changes.last():
+            one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+
+            if one_problem.is_open == action:
+                ret_val.append(one_problem)
+        else:
+            one_problem.is_open = True
+
+            if one_problem.is_open == action:
+                ret_val.append(one_problem)
+
+    return render(request, 'miniGithub/label_details.html', {'project': project, 'label': label,
+                                                                 'problems': ret_val})
 
 
 @login_required
