@@ -16,11 +16,6 @@ class ModelTests(TestCase):
         self.dueTime = datetime.now()
         self.milestone = Milestone.create(self.dueTime, self.currentTime, "Milestone1", "Ovo je opis za milestone 1",
                                           self.project)
-        #self.milestone.due_date = self.dueTime
-        # self.milestone.created_time = self.currentTime
-        # self.milestone.title = "Milestone1"
-        # self.milestone.description = "Ovo je opis za milestone 1"
-        # self.milestone.project = self.project
 
     def test_problem_creation_comment(self):
         problem = Problem.create("Problem title", "Problem description", self.project, self.user)
