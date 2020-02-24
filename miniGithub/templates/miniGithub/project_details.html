@@ -29,13 +29,31 @@
             <button type="button" class="btn btn-success">Report problem</button>
           </a>
         </div>
+
+        <div class="col-md-2" style="padding: 0px; width: auto;">
+          <a href="999999999" >
+            <button type="button" class="btn btn-light">opened</button>
+          </a>
+        </div>
+        <div class="col-md-2" style="padding: 0px; width: auto;">
+          <a href="0">
+            <button type="button" class="btn btn-info">closed</button>
+          </a>
+        </div>
+
       </div>
       <br />
+
       <div class="list-group">
         {% for problem in problems %}
           <a class="list-group-item" href="/projects/{{ project.id }}/problems/{{ problem.id }}">
             <p>
               <strong>{{ problem.title }}</strong>
+              {% if problem.is_open  %}
+                OPENED
+              {% else %}
+                CLOSED
+              {% endif %}
             </p>
             <p class="text-muted">
               #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
@@ -57,6 +75,18 @@
             <button type="button" class="btn btn-success">Report milestone</button>
           </a>
         </div>
+
+        <div class="col-md-2" style="padding: 0px; width: auto;">
+          <a href="1" >
+            <button type="button" class="btn btn-light">opened</button>
+          </a>
+        </div>
+        <div class="col-md-2" style="padding: 0px; width: auto;">
+        <a href="0">
+          <button type="button" class="btn btn-info">closed</button>
+        </a>
+        </div>
+
       </div>
       <br />
       <div class="list-group">
@@ -64,6 +94,11 @@
           <a class="list-group-item" href="{% url 'milestone_details' project.id milestone.id %}">
             <p>
               <strong>{{ milestone.title }}</strong>
+              {% if milestone.is_open  %}
+                OPENED
+              {% else %}
+                CLOSED
+              {% endif %}
             </p>
             <p class="text-muted">
               #{{milestone.id}} opened {{milestone.created_time|naturaltime}} due {{milestone.due_date|naturaltime}}
@@ -72,8 +107,14 @@
                {{milestone.description}}
              </p>
           </a>
+
+          {% if milestone.is_open  %}
+            <button type="submit" onclick="location.href='/projects/{{project.id}}/milestones/{{milestone.id}}/close/'">CLOSE</button>
+          {% else %}
+            <button type="submit" onclick="location.href='/projects/{{project.id}}/milestones/{{milestone.id}}/open/'">OPEN</button>
+          {% endif %}
         {% empty %}
-          <p>There are currently no milestones added for this project</p>
+        <p>There are currently no milestones added for this project</p>
         {% endfor %}
         </div>
       </div>

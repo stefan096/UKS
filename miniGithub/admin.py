@@ -6,17 +6,17 @@ from django.contrib import admin
 
 
 from miniGithub.models import Project, Problem, Comment, Profile, Custom_Event, Milestone, \
-     Label, Change_Code
+     Label, Change_Code, Change_Milestone, Change_State, Change_Comment
 
 admin.site.register(Project)
 admin.site.register(Problem)
 admin.site.register(Profile)
 admin.site.register(Custom_Event)
 admin.site.register(Comment)
-# admin.site.register(Change_State)
+admin.site.register(Change_State)
 # admin.site.register(Change_Assignee)
 admin.site.register(Milestone)
-# admin.site.register(Change_Milestone)
-# admin.site.register(Change_Comment)
+admin.site.register(Change_Milestone)
+admin.site.register(Change_Comment)
 admin.site.register(Change_Code)
 admin.site.register(Label)
