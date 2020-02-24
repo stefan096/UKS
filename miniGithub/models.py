@@ -36,8 +36,19 @@ class Milestone(models.Model):
     description = models.CharField(max_length=LENGTH_OF_FIELD_AREA, null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
+    @classmethod
+    def create(cls, due_date, created_time, title, description, project):
+        milestone = cls(due_date=due_date, created_time=created_time, title=title,
+                        description=description, project=project)
+        milestone.save()
+        return milestone
+
     def close_milestone(self, current_user):
         state = Change_Milestone.create(creator=current_user, problem=None, state=Milestone_State['CLOSED'].value, milestone=self)
+        return self
+
+    def close_milestone_problem(self, current_user, problem):
+        state = Change_Milestone.create(creator=current_user, problem=problem, state=Milestone_State['CLOSED'].value, milestone=self)
         return self
 
     def open_milestone(self, current_user):
