@@ -222,7 +222,6 @@ class Change_Code(models.Model):
 
     @classmethod
     def create(cls, commit_url, commit_id, message, created_time, creator, creator_email, project):
-        #created_time = datetime.now()
         new_state = cls(commit_url=commit_url, commit_id=commit_id, message=message, created_time=created_time,
                         creator=creator, creator_email=creator_email, project=project)
         new_state.save()

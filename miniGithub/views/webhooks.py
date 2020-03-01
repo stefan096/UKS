@@ -4,6 +4,7 @@ import json
 
 from miniGithub.models import Project, Change_Code, Problem
 import re
+from datetime import datetime
 
 
 @csrf_exempt
@@ -21,6 +22,8 @@ def webhook_push(request):
                 message = commit["message"]
                 creator = commit["committer"]
                 created_time = commit["timestamp"]
+                new_time = datetime.strptime(created_time, "%Y-%m-%dT%H:%M:%S%z")
+                new_time_django = datetime(new_time.year, new_time.month, new_time.day, new_time.hour, new_time.minute, new_time.second)
                 commit_id = commit["id"]
 
                 problems_strings = re.findall(r"#\d+", message)
@@ -35,14 +38,14 @@ def webhook_push(request):
                         found_problem = False
 
                     if found_problem:
-                        change_code = Change_Code.create(commit_url, commit_id, message, created_time,
+                        change_code = Change_Code.create(commit_url, commit_id, message, new_time_django,
                                                          creator["username"], creator["email"], project)
                         change_code.problem = found_problem
                         change_code.save()
                         flag = True
 
                 if not flag:
-                    change_code = Change_Code.create(commit_url, commit_id, message, created_time,
+                    change_code = Change_Code.create(commit_url, commit_id, message, new_time_django,
                                                      creator["username"], creator["email"], project)
 
         return HttpResponse('Succefully finished with parsing webhook')
