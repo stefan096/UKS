@@ -12,4 +12,6 @@ RUN pip install -r requirements.txt
 COPY . .
 
 EXPOSE 5000
+
+RUN ["chmod", "+x", "start.sh"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:5000"]
