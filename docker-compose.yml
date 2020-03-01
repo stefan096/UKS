@@ -38,10 +38,6 @@ services:
     container_name: myapp_logstash
     volumes:
       - ./config/logstash:/logstash_dir
-    links:
-      - syslog
-    log_driver: syslog
-    # command: logstash -f /logstash_dir/logstash.conf
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     ports:
