@@ -1,2 +1,4 @@
 django
 Redis
+python-json-logger==0.1.8
+python-logstash==0.4.6

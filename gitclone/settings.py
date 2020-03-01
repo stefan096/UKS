@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'j5(672)c&-_kl)j7cemn_tp8ul4(!*hlcqbk!wz(@f!#6ev$ag'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -74,7 +72,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gitclone.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -84,7 +81,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -104,7 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -118,6 +113,57 @@ USE_L10N = True
 
 USE_TZ = False
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.11/howto/static-files/
+
+STATIC_URL = '/static/'
+STATIC_ROOT = './static'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        # 'logstash': {
+        #     'level': 'DEBUG',
+        #     'class': 'logstash.TCPLogstashHandler',
+        #     'host': 'logstash',
+        #     'port': 5959,  # Default port of logstash
+        #     'version': 1,
+        #     # Version of logstash event schema. Default value: 0 (for backward compatibility of the library)
+        #     'message_type': 'django',  # 'type' field in logstash message. Default value: 'logstash'.
+        #     'fqdn': False,  # Fully qualified domain name. Default value: false.
+        #     'tags': ['django.request'],  # list of tags. Default: None.
+        # },
+        # 'console': {
+        #     'class': 'logging.StreamHandler',
+        # },
+        'applogfile': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join("./", 'APPNAME.log'),
+            'maxBytes': 1024 * 1024 * 15,  # 15MB
+            'backupCount': 10,
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['applogfile'],
+            'level': DEBUG,
+        },
+        'django.request': {
+            'handlers': ['applogfile'],
+            'level': DEBUG,
+        }
+    },
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
