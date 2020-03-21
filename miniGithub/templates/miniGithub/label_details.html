@@ -1,49 +1,62 @@
 {% extends "miniGithub/base.html" %}
 {% load humanize %}
 {% block body_block %}
-  <h3>
-    <span class="label label-lg" style="background-color: {{label.color}} !important;">
-      {{label.title}}
-    </span>
-  </h3>
-  <h5>
-    Problems from project {{project.title}} assigned to this label
-  </h5>
+<div class="row" style="display: flex; align-items: flex-end;">
+  <div class="col-md-10">
+    <h3>
+      <span class="label label-lg" style="background-color: {{label.color}} !important;">
+        {{label.title}}
+      </span>
+    </h3>
+    <h5>
+      Problems from project {{project.title}} assigned to this label
+    </h5>
+  </div>
+  <div class="col-md-2" >
+    <a href="edit/" >
+      <button type="button" class="btn btn-primary" >Edit label</button>
+    </a>
+  </div>
+</div>
 
   <div class="panel-body">
       <div class="row">
-        <div class="col-md-2" >
-          <a href="edit/" >
-            <button type="button" class="btn btn-success" >Edit label</button>
+
+        <div class="col-md-2">
+          <a href="{% if filter == 'open' %}/projects/{{ project.id }}/labels/{{ label.id }}/show{% else %}open{% endif %}">
+            <button type="button" class="btn {% if filter == 'open' %}btn-info{% else %}btn-default{% endif %}">open</button>
           </a>
-        </div>
-        <div class="col-md-2" style="padding: 0px; width: auto;">
-          <a href="1" >
-            <button type="button" class="btn btn-light">opened</button>
+          <a href="{% if filter == 'closed' %}/projects/{{ project.id }}/labels/{{ label.id }}/show{% else %}closed{% endif %}">
+            <button type="button" class="btn {% if filter == 'closed' %}btn-info{% else %}btn-default{% endif %}">closed</button>
           </a>
-        </div>
-        <div class="col-md-2" style="padding: 0px; width: auto;">
-        <a href="0">
-          <button type="button" class="btn btn-info">closed</button>
-        </a>
         </div>
       </div>
       <br />
       <div class="list-group">
         {% for problem in problems %}
-          <a class="list-group-item" href="/projects/{{ project.id }}/problems/{{ problem.id }}">
-            <p>
-              <strong>{{ problem.title }}</strong>
+          <a class="list-group-item" href="/projects/{{ project.id }}/problems/{{ problem.id }}" style="display: flex;">
+            <span style="margin-right: 15px;">
               {% if problem.is_open  %}
-                OPENED
+                <span class="glyphicon glyphicon-exclamation-sign" style="color: green;"></span>
               {% else %}
-                CLOSED
+                <span class="glyphicon glyphicon-ban-circle" style="color: red;"></span>
               {% endif %}
-            </p>
-            <p class="text-muted">
-              #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
-            </p>
+            </span>
+            <span>
+              <p>
+                <strong>{{ problem.title }}</strong>
+              </p>
+              <p class="text-muted">
+                {% if problem.is_open %}
+                  #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
+                {% else %}
+                  #{{problem.id}} closed {{problem.closed_time|naturaltime}} by {{problem.closed_by}}
+                {% endif %}
+              </p>
+            </span>
           </a>
+        {% empty %}
+          <p>There are currently no problems reported with this filter</p>
         {% endfor %}
     </div>
   </div>

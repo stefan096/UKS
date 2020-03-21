@@ -1,12 +1,23 @@
 {% extends "miniGithub/base.html" %}
 {% load humanize %}
 {% block body_block %}
-  <h3>{{project.title}}</h3>
-  <h5>
-    <a href="{{project.git_repo}}">
-      {{ project.git_repo }}
-    </a>
-  </h5>
+  <div class="row" style="display: flex; align-items: flex-end;">
+    <div class="col-md-10">
+      <h3>{{project.title}}</h3>
+      <h5>
+        <a href="{{project.git_repo}}">
+          {{ project.git_repo }}
+        </a>
+      </h5>
+    </div>
+    <div class="col-md-2">
+      {% if project.is_owner %}
+        <a class="btn btn-primary" href="{% url 'project_add_edit' project.id %}">
+          Edit project
+        </a>
+      {% endif %}
+    </div>
+  </div>
 
   <ul class="nav nav-tabs">
     <li class="{% if tab_name == 'problems' %}active{% endif %}">
@@ -15,6 +26,11 @@
     <li class="{% if tab_name == 'milestones' %}active{% endif %}">
       <a data-toggle="tab" href="{% url 'project_details' project.id 'milestones' %}">Milestones</a>
     </li>
+    {% if project.is_owner %}
+      <li class="{% if tab_name == 'collaborators' %}active{% endif %}">
+        <a data-toggle="tab" href="{% url 'project_details' project.id 'collaborators' %}">Collaborators</a>
+      </li>
+    {% endif %} 
     <li class="{% if tab_name == 'labels' %}active{% endif %}">
       <a data-toggle="tab" href="{% url 'project_details' project.id 'labels' %}">Labels</a>
     </li>
@@ -22,45 +38,50 @@
   <div class="panel-body">
     <div class="tab-content">
       <div id="problems" class="tab-pane {% if tab_name == 'problems' %}active{% endif %}">
+      <br/>
       <div class="row">
-        <div class="col-md-10"></div>
+        <div class="col-md-2" >
+          <a href="{% if filter == 'open' %}/projects/{{ project.id }}/problems{% else %}open{% endif %}">
+            <button type="button" class="btn {% if filter == 'open' %}btn-info{% else %}btn-default{% endif %}">open</button>
+          </a>
+          <a href="{% if filter == 'closed' %}/projects/{{ project.id }}/problems{% else %}closed{% endif %}">
+            <button type="button" class="btn {% if filter == 'closed' %}btn-info{% else %}btn-default{% endif %}">closed</button>
+          </a>
+        </div>
+        <div class="col-md-8"></div>
         <div class="col-md-2">
           <a href="{% url 'add_problem' project.id %}">
             <button type="button" class="btn btn-success">Report problem</button>
           </a>
         </div>
-
-        <div class="col-md-2" style="padding: 0px; width: auto;">
-          <a href="999999999" >
-            <button type="button" class="btn btn-light">opened</button>
-          </a>
-        </div>
-        <div class="col-md-2" style="padding: 0px; width: auto;">
-          <a href="0">
-            <button type="button" class="btn btn-info">closed</button>
-          </a>
-        </div>
-
       </div>
       <br />
 
       <div class="list-group">
         {% for problem in problems %}
-          <a class="list-group-item" href="/projects/{{ project.id }}/problems/{{ problem.id }}">
-            <p>
-              <strong>{{ problem.title }}</strong>
+          <a class="list-group-item" href="/projects/{{ project.id }}/problems/{{ problem.id }}/" style="display: flex; align-items: flex-start;">
+            <span style="margin-right: 15px;">
               {% if problem.is_open  %}
-                OPENED
+                <span class="glyphicon glyphicon-exclamation-sign" style="color: green;"></span>
               {% else %}
-                CLOSED
+                <span class="glyphicon glyphicon-ban-circle" style="color: red;"></span>
               {% endif %}
-            </p>
-            <p class="text-muted">
-              #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
-            </p>
+            </span>
+            <span>
+              <p>
+                <strong>{{ problem.title }}</strong>
+              </p>
+              <p class="text-muted">
+                {% if problem.is_open %}
+                  #{{problem.id}} opened {{problem.created_time|naturaltime}} by {{problem.reported_by}}
+                {% else %}
+                  #{{problem.id}} closed {{problem.closed_time|naturaltime}} by {{problem.closed_by}}
+                {% endif %}
+              </p>
+            </span>
           </a>
         {% empty %}
-          <p>There are currently no problems reported</p>
+          <p>There are currently no problems reported with this filter</p>
         {% endfor %}
         </div>
       </div>
@@ -68,53 +89,59 @@
 
      <div class="tab-content">
       <div id="milestones" class="tab-pane {% if tab_name == 'milestones' %}active{% endif %}">
+      <br/>
       <div class="row">
-        <div class="col-md-10"></div>
+
+        <div class="col-md-2">
+          <a href="{% if filter == 'open' %}/projects/{{ project.id }}/milestones{% else %}open{% endif %}">
+            <button type="button" class="btn {% if filter == 'open' %}btn-info{% else %}btn-default{% endif %}">open</button>
+          </a>
+          <a href="{% if filter == 'closed' %}/projects/{{ project.id }}/milestones{% else %}closed{% endif %}">
+            <button type="button" class="btn {% if filter == 'closed' %}btn-info{% else %}btn-default{% endif %}">closed</button>
+          </a>
+        </div>
+        <div class="col-md-8"></div>
         <div class="col-md-2">
           <a href="{% url 'add_milestone' project.id %}">
             <button type="button" class="btn btn-success">Report milestone</button>
           </a>
         </div>
 
-        <div class="col-md-2" style="padding: 0px; width: auto;">
-          <a href="1" >
-            <button type="button" class="btn btn-light">opened</button>
-          </a>
-        </div>
-        <div class="col-md-2" style="padding: 0px; width: auto;">
-        <a href="0">
-          <button type="button" class="btn btn-info">closed</button>
-        </a>
-        </div>
-
       </div>
       <br />
       <div class="list-group">
         {% for milestone in milestones %}
-          <a class="list-group-item" href="{% url 'milestone_details' project.id milestone.id %}">
-            <p>
-              <strong>{{ milestone.title }}</strong>
+          <div class="list-group-item" style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <span>
+              <h4>
+                <a href="{% url 'milestone_details' project.id milestone.id %}">
+                  <strong>{{ milestone.title }}</strong>
+                </a>
+              </h4>
+              <p class="text-muted">
+                {% if milestone.is_open  %}
+                  <strong style="margin-right: 15px">due date {{milestone.due_date|naturaltime}}</strong>
+                {% else %}
+                  <strong style="margin-right: 15px">closed {{milestone.closed_time|naturaltime}}</strong>
+                {% endif %}
+                <span class="glyphicon glyphicon-time"></span>
+                opened {{milestone.created_time|naturaltime}} 
+              </p>
+              <p class="text-muted">
+                {{milestone.description}}
+              </p>
+            </span>
+            <span style="margin-bottom: 10px;">
               {% if milestone.is_open  %}
-                OPENED
+                <a style="color: red;" href="/projects/{{project.id}}/milestones/{{milestone.id}}/close/">Close</a>
               {% else %}
-                CLOSED
+                <a href="/projects/{{project.id}}/milestones/{{milestone.id}}/open/">Reopen</a>
               {% endif %}
-            </p>
-            <p class="text-muted">
-              #{{milestone.id}} opened {{milestone.created_time|naturaltime}} due {{milestone.due_date|naturaltime}}
-            </p>
-             <p class="text-muted">
-               {{milestone.description}}
-             </p>
+            </span>
           </a>
 
-          {% if milestone.is_open  %}
-            <button type="submit" onclick="location.href='/projects/{{project.id}}/milestones/{{milestone.id}}/close/'">CLOSE</button>
-          {% else %}
-            <button type="submit" onclick="location.href='/projects/{{project.id}}/milestones/{{milestone.id}}/open/'">OPEN</button>
-          {% endif %}
         {% empty %}
-        <p>There are currently no milestones added for this project</p>
+        <p>There are currently no milestones reported with this filter</p>
         {% endfor %}
         </div>
       </div>
@@ -122,7 +149,42 @@
 
 
     <div class="tab-content">
+      <div id="collaborators" class="tab-pane {% if tab_name == 'collaborators' %}active{% endif %}">
+      <br/>
+      <div class="row">
+        <div class="col-md-10"></div>
+        <div class="col-md-2">
+          <a href="{% url 'add_collaborator_view' project.id %}">
+            <button type="button" class="btn btn-success">Add collaborator</button>
+          </a>
+        </div>
+      </div>
+      <br />
+      <div class="list-group">
+        {% for collaborator in collaborators %}
+          <span class="list-group-item" style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <span>
+              <p>
+                <strong>{{ collaborator.username }}</strong>
+              </p>
+              <p class="text-muted">
+                {{ collaborator.first_name }} {{ collaborator.last_name }} - <strong>{{ collaborator.email }}</strong>
+              </p>
+            </span>
+            <a style="color: red; margin-bottom: 10px;" href="collaborators/{{ collaborator.id }}/delete/">
+              Remove
+            </a>
+          </span>
+        {% empty %}
+        <p>There are currently no collaborators added for this project</p>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
+  
+    <div class="tab-content">
       <div id="labels" class="tab-pane {% if tab_name == 'labels' %}active{% endif %}">
+      <br/>
       <div class="row">
         <div class="col-md-10"></div>
         <div class="col-md-2">
