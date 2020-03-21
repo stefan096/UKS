@@ -72,18 +72,22 @@
           </div>
         </div>
         {% elif item.current_milestone %}
-          <div>
-            <p>
+          <div class="timeline-item">
+            <span class="timeline-badge">
               <span class="glyphicon glyphicon-paperclip"></span>
+            </span>
+            <p>
               <strong>{{ item.creator }}</strong>
               <span> has assigned this problem to milestone <strong><i>{{item.current_milestone.title}}</i></strong> </span>
               {{ item.created_time|naturaltime }}
             </p>
           </div>
         {% elif item.label %}
-          <div>
-            <p>
+          <div class="timeline-item">
+            <span class="timeline-badge">
               <span class="glyphicon glyphicon-tag"></span>
+            </span>
+            <p>
               <strong>{{ item.creator }}</strong>
               <span>
                 {% if item.is_linking_event %}
@@ -100,24 +104,30 @@
             </p>
           </div>
         {% elif item.is_assignment %}
-          <div>
+          <div class="timeline-item">
             {% if item.creator == item.assignee %}
-              <p>
+              <span class="timeline-badge">
                 <span class="glyphicon glyphicon-user"></span>
+              </span>
+              <p>
                 <strong>{{ item.creator }}</strong>
                 <span> self assigned this problem </span>
                 {{ item.created_time|naturaltime }}
               </p>
             {% elif item.assignee is None %}
-              <p>
+              <span class="timeline-badge">
                 <span class="glyphicon glyphicon-user"></span>
+              </span>
+              <p>
                 <strong>{{ item.creator }}</strong>
                 <span> removed previous user assignment to this problem </span>
                 {{ item.created_time|naturaltime }}
               </p>
             {% else %}
-              <p>
+              <span class="timeline-badge">
                 <span class="glyphicon glyphicon-user"></span>
+              </span>
+              <p>
                 <strong>{{ item.creator }}</strong>
                 <span> has assigned this problem to user <strong><i>{{item.assignee}}</i></strong> </span>
                 {{ item.created_time|naturaltime }}
@@ -125,26 +135,32 @@
             {% endif %}
           </div>
         {% elif item.commit_url %}
-          <div>
-            <p>
+          <div class="timeline-item">
+            <span class="timeline-badge">
               <span class="glyphicon glyphicon-link"></span>
+            </span>
+            <p>
               <strong>{{ item.creator }}</strong>
               <span> referenced this problem in <a href={{item.commit_url}}>a commit</a> </span>
               {{ item.created_time|naturaltime }}
             </p>
           </div>
         {% elif item.current_state %}
-          <div>
+          <div class="timeline-item">
               {% if item.current_state == '1' %}
-                <p>
+                <span class="timeline-badge">
                   <span class="glyphicon glyphicon-exclamation-sign"></span>
+                </span>
+                <p>
                   <strong>{{ item.creator }}</strong>
                   <span> has opened this issue </span>
                   {{ item.created_time|naturaltime }}
                 </p>
               {% else %}
-                <p>
+                <span class="timeline-badge">
                   <span class="glyphicon glyphicon-ban-circle"></span>
+                </span>
+                <p>
                   <strong>{{ item.creator }}</strong>
                   <span> has closed this issue </span>
                   {{ item.created_time|naturaltime }}
@@ -167,7 +183,7 @@
             <input class="btn btn-success" type="submit" name="" value="Comment">
                {% if problem.is_open %}
                 <a href="close/">
-                  <button class="btn btn-default" type="button">
+                  <button class="btn btn-danger" type="button">
                     <span class="glyphicon glyphicon-ban-circle"></span>
                     Close issue
                   </button>

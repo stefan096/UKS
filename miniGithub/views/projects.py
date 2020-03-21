@@ -10,7 +10,7 @@ from itertools import chain
 from operator import attrgetter
 from django.contrib.auth.models import User
 from miniGithub.forms import ProblemForm, MilestoneForm, EditCommentForm, LabelForm
-from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code, Change_Label, Label
+from miniGithub.models import Custom_Event, Project, Problem, Profile, Comment, Milestone, Change_Comment, Change_State, Problem_State, Change_Milestone, Change_Assignee, Change_Code, Change_Label, Label, Milestone_State
 from django.contrib import messages
 
 
@@ -24,7 +24,9 @@ def projects_view(request):
 
 @login_required
 def project_view(request, project_id, tab_name):
+    current_user = request.user
     project = get_object_or_404(Project, pk=project_id)
+    project.is_owner = current_user == project.owner
     project_problems = []
     if tab_name == 'problems':
         project_problems = Problem.objects.filter(project=project_id)
@@ -35,12 +37,17 @@ def project_view(request, project_id, tab_name):
             state_changes = Change_State.objects.filter(problem=one_problem.id)
 
             if state_changes.last():
+                last_change = state_changes.last()
                 if state_changes.last().current_state == None:
                     one_problem.is_open = False
                 elif int(state_changes.last().current_state) == Problem_State.CLOSED.value:
                     one_problem.is_open = False
                 else:
                     one_problem.is_open = True
+                
+                if one_problem.is_open is False:
+                    one_problem.closed_time = last_change.created_time
+                    one_problem.closed_by = last_change.creator
             else:
                 one_problem.is_open = True
 
@@ -48,6 +55,11 @@ def project_view(request, project_id, tab_name):
 
         return render(request, 'miniGithub/project_details.html',
                       {'project': project, 'problems': ret_val, 'tab_name': tab_name})
+
+    elif tab_name == 'collaborators':
+
+        collaborators = project.collaborators.all().filter(~Q(id=request.user.id)).filter(~Q(id=project.owner.id))
+        return render(request, 'miniGithub/project_details.html', {'project': project, 'collaborators': collaborators, 'tab_name': tab_name})
 
     elif tab_name == 'milestones':
         project_milestones = Milestone.objects.filter(project=project_id)
@@ -57,12 +69,17 @@ def project_view(request, project_id, tab_name):
             state_changes = Change_Milestone.objects.filter(current_milestone=one_milestones.id)
 
             if state_changes.last():
+                last_change = state_changes.last()
                 if state_changes.last().current_state == None:
                     one_milestones.is_open = False
                 elif int(state_changes.last().current_state) == Problem_State.CLOSED.value:
                     one_milestones.is_open = False
                 else:
                     one_milestones.is_open = True
+                
+                if one_milestones.is_open is False:
+                    one_milestones.closed_time = last_change.created_time
+                    one_milestones.closed_by = last_change.creator
             else:
                 one_milestones.is_open = True
 
@@ -81,7 +98,10 @@ def project_view(request, project_id, tab_name):
 
 @login_required
 def project_view_filter(request, project_id, tab_name, action):
+    
+    current_user = request.user
     project = get_object_or_404(Project, pk=project_id)
+    project.is_owner = current_user == project.owner
     project_problems = []
     if tab_name == 'problems':
         project_problems = Problem.objects.filter(project=project_id)
@@ -90,33 +110,36 @@ def project_view_filter(request, project_id, tab_name, action):
 
         for one_problem in project_problems:
             state_changes = Change_State.objects.filter(problem=one_problem.id)
-
             if state_changes.last():
+                last_change = state_changes.last()
                 if state_changes.last().current_state == None:
                     one_problem.is_open = False
                 elif int(state_changes.last().current_state) == Problem_State.CLOSED.value:
                     one_problem.is_open = False
                 else:
                     one_problem.is_open = True
-
-                if one_problem.is_open is True and action == 999999999:
+    
+                if one_problem.is_open is False:
+                    one_problem.closed_time = last_change.created_time
+                    one_problem.closed_by = last_change.creator
+                if one_problem.is_open is True and action == 'open':
                     ret_val.append(one_problem)
-                elif one_problem.is_open == action:
+                elif one_problem.is_open is False and action == 'closed':
                     ret_val.append(one_problem)
                 elif action == -1:
                     ret_val.append(one_problem)
             else:
                 one_problem.is_open = True
 
-                if one_problem.is_open is True and action == 999999999:
+                if one_problem.is_open is True and action == 'open':
                     ret_val.append(one_problem)
-                elif one_problem.is_open == action:
+                elif one_problem.is_open is False and action == 'closed':
                     ret_val.append(one_problem)
                 elif action == -1:
                     ret_val.append(one_problem)
 
         return render(request, 'miniGithub/project_details.html',
-                      {'project': project, 'problems': ret_val, 'tab_name': tab_name})
+                      {'project': project, 'problems': ret_val, 'tab_name': tab_name, 'filter': action})
     elif tab_name == 'milestones':
         project_milestones = Milestone.objects.filter(project=project_id)
         ret_val = []
@@ -125,6 +148,7 @@ def project_view_filter(request, project_id, tab_name, action):
             state_changes = Change_Milestone.objects.filter(current_milestone=one_milestones.id)
 
             if state_changes.last():
+                last_change = state_changes.last()
                 if state_changes.last().current_state == None:
                     one_milestones.is_open = False
                 elif int(state_changes.last().current_state) == Problem_State.CLOSED.value:
@@ -132,23 +156,31 @@ def project_view_filter(request, project_id, tab_name, action):
                 else:
                     one_milestones.is_open = True
 
-                if one_milestones.is_open == action:
+                if one_milestones.is_open is False:
+                    one_milestones.closed_time = last_change.created_time
+                    one_milestones.closed_by = last_change.creator
+                
+                if one_milestones.is_open is True and action == 'open':
+                    ret_val.append(one_milestones)
+                elif one_milestones.is_open is False and action == 'closed':
                     ret_val.append(one_milestones)
                 elif action == -1:
                     ret_val.append(one_milestones)
             else:
                 one_milestones.is_open = True
 
-                if one_milestones.is_open == action:
+                if one_milestones.is_open is True and action == 'open':
+                    ret_val.append(one_milestones)
+                elif one_milestones.is_open is False and action == 'closed':
                     ret_val.append(one_milestones)
                 elif action == -1:
                     ret_val.append(one_milestones)
 
         return render(request, 'miniGithub/project_details.html',
-                  {'project': project, 'milestones': ret_val, 'tab_name': tab_name})
+                  {'project': project, 'milestones': ret_val, 'tab_name': tab_name, 'filter': action})
 
     return render(request, 'miniGithub/project_details.html',
-                  {'project': project, 'problems': project_problems, 'tab_name': tab_name})
+                  {'project': project, 'problems': project_problems, 'tab_name': tab_name, 'filter': action})
 
 
 @login_required
@@ -250,7 +282,7 @@ def close_milestone(request, project_id, milestone_id):
     milestone = get_object_or_404(Milestone, pk=milestone_id)
     current_user = request.user
     milestone.close_milestone(current_user)
-    return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'milestones'}))
+    return redirect(reverse('milestone_details', kwargs={'project_id': project_id, 'milestone_id': milestone_id}))
 
 
 @login_required
@@ -258,7 +290,7 @@ def open_milestone(request, project_id, milestone_id):
     milestone = get_object_or_404(Milestone, pk=milestone_id)
     current_user = request.user
     milestone.open_milestone(current_user)
-    return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'milestones'}))
+    return redirect(reverse('milestone_details', kwargs={'project_id': project_id, 'milestone_id': milestone_id}))
 
 @login_required
 def set_assignee_view(request, project_id, problem_id):
@@ -274,7 +306,6 @@ def set_assignee_view(request, project_id, problem_id):
 def set_assignee(request, project_id, problem_id):
     problem = get_object_or_404(Problem, pk=problem_id)
     assignee_id = request.POST['assignee']
-    print (assignee_id)
     current_user = request.user
     if (assignee_id == ""):
         problem = problem.assign_user(current_user, None)
@@ -368,7 +399,13 @@ def label_details(request, project_id, label_id):
     for one_problem in problems:
         state_changes = Change_State.objects.filter(problem=one_problem.id)
         if state_changes.last():
+            last_change = state_changes.last()
             one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+        
+            if one_problem.is_open is False:
+                one_problem.closed_time = last_change.created_time
+                one_problem.closed_by = last_change.creator
+
         else:
             one_problem.is_open = True
 
@@ -386,18 +423,27 @@ def label_details_action(request, project_id, label_id, action):
     for one_problem in problems:
         state_changes = Change_State.objects.filter(problem=one_problem.id)
         if state_changes.last():
+            last_change = state_changes.last()
             one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
 
-            if one_problem.is_open == action:
+            if one_problem.is_open is False:
+                one_problem.closed_time = last_change.created_time
+                one_problem.closed_by = last_change.creator
+
+            if one_problem.is_open is True and action == 'open':
+                ret_val.append(one_problem)
+            elif one_problem.is_open is False and action == 'closed':
                 ret_val.append(one_problem)
         else:
             one_problem.is_open = True
 
-            if one_problem.is_open == action:
+            if one_problem.is_open is True and action == 'open':
+                ret_val.append(one_problem)
+            elif one_problem.is_open is False and action == 'closed':
                 ret_val.append(one_problem)
 
     return render(request, 'miniGithub/label_details.html', {'project': project, 'label': label,
-                                                                 'problems': ret_val})
+                                                                 'problems': ret_val, 'filter': action})
 
 
 @login_required
@@ -424,11 +470,31 @@ def milestone_details(request, project_id, milestone_id):
     project = get_object_or_404(Project, pk=project_id)
     found_milestone = Milestone.objects.get(pk=milestone_id)
     problems = Problem.objects.filter(linked_milestone=found_milestone)
+    state_changes = Change_Milestone.objects.filter(current_milestone=milestone_id)
+    if state_changes.last():
+        last_change = state_changes.last()
+        if state_changes.last().current_state == None:
+            found_milestone.is_open = False
+        elif int(state_changes.last().current_state) == Milestone_State.CLOSED.value:
+            found_milestone.is_open = False
+        else:
+            found_milestone.is_open = True
+
+        if found_milestone.is_open is False:
+            found_milestone.closed_time = last_change.created_time
+            found_milestone.closed_by = last_change.creator
+    else:
+        found_milestone.is_open = True
 
     for one_problem in problems:
         state_changes = Change_State.objects.filter(problem=one_problem.id)
         if state_changes.last():
+            last_change = state_changes.last()
             one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+            
+            if one_problem.is_open is False:
+                one_problem.closed_time = last_change.created_time
+                one_problem.closed_by = last_change.creator
         else:
             one_problem.is_open = True
 
@@ -442,22 +508,46 @@ def milestone_details_action(request, project_id, milestone_id, action):
     found_milestone = Milestone.objects.get(pk=milestone_id)
     problems = Problem.objects.filter(linked_milestone=found_milestone)
     ret_val = []
+    state_changes = Change_Milestone.objects.filter(current_milestone=milestone_id)
+    if state_changes.last():
+        last_change = state_changes.last()
+        if state_changes.last().current_state == None:
+            found_milestone.is_open = False
+        elif int(state_changes.last().current_state) == Milestone_State.CLOSED.value:
+            found_milestone.is_open = False
+        else:
+            found_milestone.is_open = True
+
+        if found_milestone.is_open is False:
+            found_milestone.closed_time = last_change.created_time
+            found_milestone.closed_by = last_change.creator
+    else:
+        found_milestone.is_open = True
 
     for one_problem in problems:
         state_changes = Change_State.objects.filter(problem=one_problem.id)
         if state_changes.last():
-            one_problem.is_open = one_problem.is_open = int(state_changes.last().current_state) != Problem_State.CLOSED.value
+            last_change = state_changes.last()
+            one_problem.is_open = one_problem.is_open = int(last_change.current_state) != Problem_State.CLOSED.value
 
-            if one_problem.is_open == action:
+            if one_problem.is_open is False:
+                one_problem.closed_time = last_change.created_time
+                one_problem.closed_by = last_change.creator
+
+            if one_problem.is_open is True and action == 'open':
+                ret_val.append(one_problem)
+            elif one_problem.is_open is False and action == 'closed':
                 ret_val.append(one_problem)
         else:
             one_problem.is_open = True
 
-            if one_problem.is_open == action:
+            if one_problem.is_open is True and action == 'open':
+                ret_val.append(one_problem)
+            elif one_problem.is_open is False and action == 'closed':
                 ret_val.append(one_problem)
 
     return render(request, 'miniGithub/milestone_details.html', {'project': project, 'milestone': found_milestone,
-                                                                 'problems': ret_val})
+                                                                 'problems': ret_val, 'filter': action})
 
 
 @login_required

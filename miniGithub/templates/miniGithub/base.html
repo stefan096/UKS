@@ -11,17 +11,18 @@
       <div class="container">
         <ul class="nav navbar-nav">
 {# Django Home Link / Admin Link / Register Link#}
-          <li><a class="navbar-brand" href="{% url 'projects' %}">PROJECT</a></li>
-            {% if user.is_authenticated %}
-             <li><a class="navbar-link" href="{% url 'show_collaborator_projects'  %}">Collaboration projects</a></li>
-             <li><a class="navbar-link" href="{% url 'project_add_edit' 0  %}">Add project</a></li>
-           {% endif %}
+          <li><a class="navbar-brand" href="{% url 'projects' %}">MiniGit</a></li>
+          {% if user.is_authenticated %}
+          <li><a class="navbar-link" href="{% url 'show_collaborator_projects'  %}">Collaboration projects</a></li>
+          {% endif %}
+        </ul>
+        <ul class="nav navbar-nav  navbar-right">
            {% if not user.is_authenticated %}
              <li><a class="navbar-link" href="{% url 'signup' %}">Register</a></li>
            {% endif %}
           {# Some logic on what to display for last item#}
           {% if user.is_authenticated %}
-            <li><a href="{% url 'logout' %}">Logout</a></li>
+            <li><a href="{% url 'logout' %}" style="color: red;">Logout</a></li>
           {% else %}
             <li><a class="navbar-link" href="{% url 'login' %}">Login</a></li>
           {% endif %}
