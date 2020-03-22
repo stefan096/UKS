@@ -205,8 +205,10 @@ def project_save(request, project_id):
     current_user = request.user
     found_project.owner = current_user
     found_project.save()
-
-    return redirect(reverse('projects'))
+    if project_id:
+        return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'problems'}))
+    else:
+        return redirect(reverse('projects'))
 
 
 @login_required
@@ -585,7 +587,7 @@ def collaborators_view(request, project_id):
 def delete_collaborator(request, project_id, collaborator_id):
     project = get_object_or_404(Project, pk=project_id)
     project.collaborators.remove(collaborator_id)
-    return redirect(reverse('collaborators_view', args=[project_id]))
+    return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'collaborators'}))
 
 
 @login_required
@@ -604,17 +606,18 @@ def add_collaborator(request, project_id):
 
     if project.owner.id == profile.id:
         messages.info(request, 'You are already owner of this project!')
+        return redirect(reverse('add_collaborator_view', args=[project_id]))
     elif collaborators:
         messages.info(request, 'User is already collaborator on this project!')
+        return redirect(reverse('add_collaborator_view', args=[project_id]))
         # that means query set is not empty so i cant add user that is already collaborator
     else:
         temp_collaborators = list(project.collaborators.all())
         temp_collaborators.append(profile.user)
         project.collaborators.set(temp_collaborators)
         project.save()
-        messages.info(request, 'Successfully added collaborator')
-
-    return redirect(reverse('add_collaborator_view', args=[project_id]))
+    return redirect(reverse('project_details', kwargs={'project_id': project_id, 'tab_name': 'collaborators'}))
+    
 
 
 @login_required
