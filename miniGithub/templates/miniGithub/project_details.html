@@ -172,7 +172,7 @@
                 {{ collaborator.first_name }} {{ collaborator.last_name }} - <strong>{{ collaborator.email }}</strong>
               </p>
             </span>
-            <a style="color: red; margin-bottom: 10px;" href="collaborators/{{ collaborator.id }}/delete/">
+            <a style="color: red; margin-bottom: 10px;" href="{% url 'delete_collaborator' project.id collaborator.id %}">
               Remove
             </a>
           </span>
