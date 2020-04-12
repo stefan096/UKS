@@ -1,0 +1,44 @@
+{% extends "miniGithub/base_with_jquery.html" %}
+{% load humanize %}
+{% block body_block %}
+  <h3>
+    {{ problem.title }}
+    &nbsp;
+    <i class="text-muted">
+      #{{ problem.id }}
+    </i>
+  </h3>
+  <p class="text-muted">
+    <strong> {{ problem.reported_by }} </strong>
+    reported this problem {{ problem.created_time|naturaltime }}
+  </p>
+  <hr />
+  <h4>Link this problem to milestone</h4>
+  <br />
+  <div class="list-group">
+    {% for label in labels %}
+      <div class="list-group-item">
+        <span class="row" style="display: flex; align-items: center;">
+          <span class="col-xs-10">
+            <p>
+              <span class="label" style="background-color: {{label.color}}!important;">
+                {{ label.title }}
+              </span>
+            </p>
+          </span>
+          <span class="col-xs-2">
+            {% if label.linked %}
+              <a class="list-group-item" href="{{label.id}}/unlink" style="text-align: center;">
+                <strong class="text-danger">Unlink</strong>
+              </a>
+            {% else %}
+              <a class="list-group-item" href="{{label.id}}/link" style="text-align: center;">
+                <strong class="text-success">Link</strong>
+              </a>
+            {% endif %}
+          </span>
+        </span>
+      </div>
+    {% endfor %}
+    </div>
+  {% endblock %}

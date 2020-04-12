@@ -1,0 +1,48 @@
+.timeline-item {
+  position: relative;
+  display: flex;
+  padding: 16px 0;
+  margin-left: 16px;
+  align-items: center;
+}
+
+.panel {
+  margin-bottom: 0px;
+}
+
+hr {
+  margin-top: -1px;
+  border-top: 2px solid #eee;
+}
+
+.timeline-item .timeline-badge {
+  background-color: #e1e4e8;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  margin-right: 8px;
+  margin-left: -15px;
+  z-index: 1;
+  color: #444d56;
+  flex-shrink: 0;
+  height: 32px;
+  position: relative;
+}
+
+.timeline-item:before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: block;
+  width: 2px;
+  content: "";
+  background-color: #e1e4e8;
+}
+
+.timeline-item p {
+  margin: 0px;
+}

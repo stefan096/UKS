@@ -7,10 +7,16 @@ class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=100, help_text='First Name')
     last_name = forms.CharField(max_length=100, help_text='Last Name')
     email = forms.EmailField(max_length=150, help_text='Email')
-
+    
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )
+    
+    def __init__(self, *args, **kwargs):
+        super(SignUpForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+    
 
 
 class LoginForm(forms.Form):
@@ -39,3 +45,10 @@ class MilestoneForm(forms.Form):
         self.description = milestone.description
         self.due_date = milestone.due_date
 
+class LabelForm(forms.Form):
+    title = forms.CharField(max_length=100, help_text="Label title")
+    color = forms.CharField(max_length=100, help_text="Label color")
+
+    def method_to_construct(self, label):
+        self.title = label.title
+        self.color = label.color

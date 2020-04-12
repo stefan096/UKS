@@ -1,52 +1,32 @@
 {% extends "miniGithub/base.html" %}
 {% load humanize %}
 {% block body_block %}
-  <div class="row" style="display: flex; align-items: center;">
-    <div class="col-md-9" >
-      <h3>{{milestone.title}}</h3>
-      <h5>
-        {{project.title}}
-      </h5>
-      <br/>
-      <p>
-        {% if milestone.is_open  %}
-          <strong style="margin-left: 15px">Due date:</strong> {{milestone.due_date|naturaltime}}
-        {% else %}
-          <strong style="margin-left: 15px">Closed:</strong> {{milestone.closed_time|naturaltime}}
-        {% endif %}
-      </p>
-      <p>
-        <span  style="margin-left: 15px" class="glyphicon glyphicon-time"></span>
-        Opened: {{milestone.created_time|naturaltime}}
-      </p>
-    </div>
-    <div class="col-md-3" >
-      <div style="display: flex; 
-      justify-content: space-around;">
-        <a href="edit/" >
-          <button type="button" class="btn btn-primary" >Edit milestone</button>
-        </a>
-        {% if milestone.is_open  %}
-          <a href="/projects/{{project.id}}/milestones/{{milestone.id}}/close/">
-            <button type="button" class="btn btn-danger" >Close milestone</button>
-          </a>
-        {% else %}
-          <a href="/projects/{{project.id}}/milestones/{{milestone.id}}/open/">
-            <button type="button" class="btn btn-default" >Reopen milestone</button>
-          </a>
-        {% endif %}
-      </div>
-    </div>
+<div class="row" style="display: flex; align-items: flex-end;">
+  <div class="col-md-10">
+    <h3>
+      <span class="label label-lg" style="background-color: {{label.color}} !important;">
+        {{label.title}}
+      </span>
+    </h3>
+    <h5>
+      Problems from project {{project.title}} assigned to this label
+    </h5>
   </div>
-  <br/>
+  <div class="col-md-2" >
+    <a href="edit/" >
+      <button type="button" class="btn btn-primary" >Edit label</button>
+    </a>
+  </div>
+</div>
 
   <div class="panel-body">
       <div class="row">
+
         <div class="col-md-2">
-          <a href="{% if filter == 'open' %}/projects/{{ project.id }}/problems/{{ milestone.id }}/show{% else %}open{% endif %}">
+          <a href="{% if filter == 'open' %}/projects/{{ project.id }}/labels/{{ label.id }}/show{% else %}open{% endif %}">
             <button type="button" class="btn {% if filter == 'open' %}btn-info{% else %}btn-default{% endif %}">open</button>
           </a>
-          <a href="{% if filter == 'closed' %}/projects/{{ project.id }}/problems/{{ milestone.id }}/show{% else %}closed{% endif %}">
+          <a href="{% if filter == 'closed' %}/projects/{{ project.id }}/labels/{{ label.id }}/show{% else %}closed{% endif %}">
             <button type="button" class="btn {% if filter == 'closed' %}btn-info{% else %}btn-default{% endif %}">closed</button>
           </a>
         </div>

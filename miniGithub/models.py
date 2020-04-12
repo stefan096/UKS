@@ -17,6 +17,11 @@ class Problem_State(Enum):
     CLOSED = 2
 
 
+class Milestone_State(Enum):
+    OPEN = 1
+    CLOSED = 2
+
+
 class Project(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
     git_repo = models.CharField(max_length=LENGTH_OF_FIELD)
@@ -30,6 +35,25 @@ class Milestone(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD, null=True)
     description = models.CharField(max_length=LENGTH_OF_FIELD_AREA, null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+
+    @classmethod
+    def create(cls, due_date, created_time, title, description, project):
+        milestone = cls(due_date=due_date, created_time=created_time, title=title,
+                        description=description, project=project)
+        milestone.save()
+        return milestone
+
+    def close_milestone(self, current_user):
+        state = Change_Milestone.create(creator=current_user, problem=None, state=Milestone_State['CLOSED'].value, milestone=self)
+        return self
+
+    def close_milestone_problem(self, current_user, problem):
+        state = Change_Milestone.create(creator=current_user, problem=problem, state=Milestone_State['CLOSED'].value, milestone=self)
+        return self
+
+    def open_milestone(self, current_user):
+        state = Change_Milestone.create(creator=current_user, problem=None, state=Milestone_State['OPEN'].value, milestone=self)
+        return self
 
 
 class Problem(models.Model):
@@ -69,7 +93,7 @@ class Problem(models.Model):
 
     def link_to_milestone(self, current_user, milestone):
         self.linked_milestone = milestone
-        new_event = Change_Milestone.create(current_user, milestone, self)
+        new_event = Change_Milestone.create(current_user, milestone, self, Milestone_State['OPEN'].value)
         self.save()
         return self
     
@@ -79,6 +103,17 @@ class Problem(models.Model):
         self.save()
         return self
 
+    def add_label(self, current_user, label):
+        self.labels.add(label)
+        label = Change_Label.create(current_user, label, True, self)
+        self.save()
+        return self
+
+    def remove_label(self, current_user, label):
+        self.labels.remove(label)
+        label = Change_Label.create(current_user, label, False, self)
+        self.save()
+        return self
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -117,7 +152,7 @@ class Comment(Custom_Event):
         edited_time = datetime.now()
         self.description = description
         self.save()
-        Change_Comment.create(comment=self, created_time = edited_time, problem=self.problem, creator=creator)
+        Change_Comment.create(comment=self, created_time=edited_time, problem=self.problem, creator=creator)
         return self
 
 
@@ -159,13 +194,18 @@ class Change_Assignee(Custom_Event):
     def is_assignment(self):
         return True
 
+
 class Change_Milestone(Custom_Event):
     current_milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, null=True)
+    current_state = models.CharField(
+      max_length=2,
+      choices=[(tag, tag.value) for tag in Milestone_State], null=True
+    )
 
     @classmethod
-    def create(cls, creator, milestone, problem):
+    def create(cls, creator, milestone, problem, state):
         created_time = datetime.now()
-        new_state = cls(creator=creator, problem=problem, current_milestone=milestone, created_time=created_time)
+        new_state = cls(creator=creator, problem=problem, current_milestone=milestone, created_time=created_time, current_state=state)
         new_state.save()
         return new_state
 
@@ -182,7 +222,6 @@ class Change_Code(models.Model):
 
     @classmethod
     def create(cls, commit_url, commit_id, message, created_time, creator, creator_email, project):
-        #created_time = datetime.now()
         new_state = cls(commit_url=commit_url, commit_id=commit_id, message=message, created_time=created_time,
                         creator=creator, creator_email=creator_email, project=project)
         new_state.save()
@@ -192,4 +231,16 @@ class Change_Code(models.Model):
 class Label(models.Model):
     title = models.CharField(max_length=LENGTH_OF_FIELD)
     color = models.CharField(max_length=LENGTH_OF_FIELD)
-    # problem = models.ForeignKey(Problem, on_delete=models.CASCADE, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    problems = models.ManyToManyField(Problem, related_name='labels')
+
+class Change_Label(Custom_Event):
+    label = models.ForeignKey(Label, on_delete=models.CASCADE, null=True)
+    is_linking_event = models.BooleanField()
+
+    @classmethod
+    def create(cls, creator, label, is_linking_event, problem):
+        created_time = datetime.now()
+        new_state = cls(creator=creator, problem=problem, label=label, created_time=created_time, is_linking_event=is_linking_event)
+        new_state.save()
+        return new_state
