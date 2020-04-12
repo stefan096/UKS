@@ -1,62 +1,115 @@
 @startuml
 
-class Projekat {
-          naziv: string
-          git_repo: string
-  }
-  Projekat *-- "0..*" Problem
-  class Problem {
-          naslov: string
-  }
-  Problem "*" -- "*" Problem
-  class Komentar {
-          opis: string
-  }
-  Problem *-- "1..*" Događaj
-  Događaj "*" -- Korisnik
+class Project {
+        title: string
+        git_repo: string
+        owner: User
+}
 
-  class Događaj {
-          vreme: timestamp
-  }
-  class PromenaStanja {
-          novo_stanje: StanjeProblema
-  }
-  class PromenaOdgovornog {
-          odgovoran: Korisnik
-  }
-  class PromenaKontrolneTačke {
-  }
-  class PromenaKoda{
-          url: URL
-  }
-  Događaj <|-- PromenaStanja
-  Događaj <|-- Komentar
-  Događaj <|-- PromenaKomentara
-  Događaj <|-- PromenaOdgovornog
-  Događaj <|-- PromenaKontrolneTačke
-  Događaj <|-- PromenaKoda
+Project "0..*" -- "0..*" User : collaborators
 
-  class KontrolnaTačka {
-          datum: date
-  }
-  Projekat *--> "*" KontrolnaTačka
-  PromenaKontrolneTačke --> "0..1" KontrolnaTačka
+class Milestone {
+        due_date: timestamp
+        created_time: timestamp
+        title: string
+        description: string
+}
 
-  enum StanjeProblema {
-          Otvoren,
-          Zatvoren
-  }
+Project *-- "0..*" Milestone
 
-  class Labela {
-          naziv: string
-          boja: string
-  }
+class Problem {
+        title: string
+        created_time: timestamp
+        reported_by: User
+        linked_milestone: Milestone
+        current_assignee: User
+}
 
-  Problem -- "0..*" Labela
+Project *-- "0..*" Problem
+Problem "0..1" -- "*" Problem : base_problem
 
-  class Korisnik {
-          ime: string
-          email: EMail
-  }
+class Profile {
+        first_name: string
+        last_name: string
+        email: string
+}
+
+Profile "0..1"--"1" User
+
+class Custom_Event {
+      created_time: timestamp
+      creator: User
+}
+
+Problem *-- "1..*" Custom_Event
+
+class Comment {
+        description: string
+}
+
+class Change_Comment {
+        relatedComment: Comment
+}
+
+class Change_State {
+        current_state: Problem_State
+}
+
+class Change_Assignee {
+        assignee: User
+}
+
+class Change_Milestone {
+        current_milestone: Milestone
+        current_state: Milestone_State
+}
+
+class Change_Code {
+        commit_url: URL
+        commit_id: string
+        message: string
+        created_time: timestamp
+        creator: string
+        creator_email: string
+        project: Project
+        problem: Problem
+}
+
+Custom_Event <|-- Comment
+Custom_Event <|-- Change_Comment
+Custom_Event <|-- Change_State
+Custom_Event <|-- Change_Assignee
+Custom_Event <|-- Change_Milestone
+Custom_Event <|-- Change_Code
+
+enum Problem_State {
+        OPEN,
+        CLOSED
+}
+
+enum Milestone_State {
+        OPEN,
+        CLOSED
+}
+
+class Label {
+        title: string
+        color: string
+        project: Project
+}
+
+class Change_Label {
+       label: Label
+       is_linking_event: boolean 
+}
+
+Custom_Event <|-- Change_Label
+
+Problem "0..*" -- "0..*" Label
+
+class User {
+        email: EMail
+        password: string
+}
 
 @enduml
